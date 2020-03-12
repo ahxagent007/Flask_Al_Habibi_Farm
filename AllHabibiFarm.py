@@ -73,11 +73,11 @@ class DatabaseByPyMySQL:
         if self.isEmailExist(Email):
             user = self.getUserByEmail(Email)
             if user['UserPass'] == Pass:
-                return True, user['Type']
+                return user['Type'], True
             else:
-                return False, 'NULL'
+                return 'NULL', False
         else:
-            return False, 'NULL'
+            return 'NULL', False
 
     #2
     def getCommonData(self):
@@ -86,7 +86,11 @@ class DatabaseByPyMySQL:
         data = self.cursor.fetchall()
 
         print('getCommonData : ', str(data), flush=True)
-        return data[0]
+
+        if len(data)>0:
+            return data[0], True
+        else:
+            return data, False
 
     #3
     def getAllAnimals(self):
@@ -95,7 +99,11 @@ class DatabaseByPyMySQL:
         data = self.cursor.fetchall()
 
         print('getAllAnimals : ', str(data), flush=True)
-        return data
+
+        if len(data)>0:
+            return data, True
+        else:
+            return data, False
 
     #4
     def getAllAnimalsRange(self, page, range):
@@ -414,7 +422,7 @@ class DatabaseByPyMySQL:
 #################### API ####################################
 
 @app.route('/API/testReturn', methods=['POST'])
-def returnData():
+def testReturnData():
     return jsonify({"error": "OK OK OK "}), 200
 
 @app.route('/API/testReceive/<id>', methods=['POST'])
@@ -429,43 +437,126 @@ def testReceive(id):
 
 
 #1
-@app.route('/API/login', methods=['POST'])
+@app.route('/API/Login', methods=['POST'])
 def Login():
 
     contentJSON = request.json
-    email = contentJSON["Email"]
-    passs = contentJSON["Pass"]
+    try:
+        email = contentJSON["Email"]
+        passs = contentJSON["Pass"]
+
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "type": "NULL"}), 400
 
     DB = DatabaseByPyMySQL()
-    status, type = DB.Login(email, passs)
+    type, status = DB.Login(email, passs)
 
     if status:
         return jsonify({"status": 1, "type": type}), 200
     else:
         return jsonify({"status": 0, "type": type}), 200
 
-#2
-#3
+# 2
+@app.route('/API/CommonData', methods=['POST'])
+def CommonData():
+
+    DB = DatabaseByPyMySQL()
+    data, status = DB.getCommonData()
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "type": data}), 200
+
+# 3
+@app.route('/API/AllAnimals', methods=['POST'])
+def AllAnimals():
+
+    DB = DatabaseByPyMySQL()
+    data, status = DB.getAllAnimals()
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "type": data}), 200
+
 # 4
+@app.route('/API/AllAnimalsRange', methods=['POST'])
+def AllAnimalsRange():
+
+    contentJSON = request.json
+
+    try:
+        page = contentJSON["page"]
+        range = contentJSON["total"]
+
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+
+    DB = DatabaseByPyMySQL()
+    data, status = DB.getAllAnimalsRange(page, range)
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "data": data}), 200
+
 # 5
+@app.route('/API/AnimalsByCategory', methods=['POST'])
+def AnimalsByCategory():
+
+    contentJSON = request.json
+
+    try:
+        cat = contentJSON["category"]
+
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+
+
+    DB = DatabaseByPyMySQL()
+    data, status = DB.getAnimalByCategory(cat)
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "data": data}), 200
+
 # 6
+
 # 7
+
 # 8
+
 # 9
+
 # 10
+
 # 11
+
 # 12
+
 # 13
+
 # 14
+
 # 15
+
 # 16
+
 # 17
+
 # 18
+
 # 19
+
 # 20
-@app.route('/API/testReturn', methods=['POST', 'GET'])
-def returnDataasd():
-    return jsonify({"error": "OK OK OK "}), 200
+
 
 
 #################### API END ####################################
