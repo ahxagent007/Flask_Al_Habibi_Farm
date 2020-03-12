@@ -528,35 +528,277 @@ def AnimalsByCategory():
         return jsonify({"status": 0, "data": data}), 200
 
 # 6
+@app.route('/API/AnimalByID', methods=['POST'])
+def AnimalByID():
+    contentJSON = request.json
+    try:
+        ID = contentJSON["ID"]
 
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+    DB = DatabaseByPyMySQL()
+    data, status = DB.getAnimalByID(ID)
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "data": data}), 200
 # 7
+@app.route('/API/SearchAnimal', methods=['POST'])
+def SearchAnimal():
+    contentJSON = request.json
+    try:
+        search = contentJSON["SearchString"]
 
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+    DB = DatabaseByPyMySQL()
+    data, status = DB.SearchAnimal(search)
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "data": data}), 200
 # 8
+@app.route('/API/AllSlaughterAnimals', methods=['POST'])
+def AllSlaughterAnimals():
+
+    DB = DatabaseByPyMySQL()
+    data, status = DB.getAllSlaughterAnimal()
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "type": data}), 200
 
 # 9
+@app.route('/API/AllMissingAnimals', methods=['POST'])
+def AllMissingAnimals():
+
+    DB = DatabaseByPyMySQL()
+    data, status = DB.getAllSlaughterAnimal()
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "type": data}), 200
 
 # 10
+@app.route('/API/VaccineHistory', methods=['POST'])
+def VaccineHistory():
+    contentJSON = request.json
+    try:
+        AnimalTag = contentJSON["AnimalTag"]
+
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+    DB = DatabaseByPyMySQL()
+    data, status = DB.getVaccineHistory(AnimalTag)
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "data": data}), 200
 
 # 11
+@app.route('/API/AllOwner', methods=['POST'])
+def AllOwner():
 
+    DB = DatabaseByPyMySQL()
+    data, status = DB.getAllOwner()
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "type": data}), 200
 # 12
+@app.route('/API/AllEmployee', methods=['POST'])
+def AllEmployee():
 
+    DB = DatabaseByPyMySQL()
+    data, status = DB.getAllEmployee()
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "type": data}), 200
 # 13
+@app.route('/API/AddAnimal', methods=['POST'])
+def AddAnimal():
+    contentJSON = request.json
+    try:
+        AnimalCategory = contentJSON["AnimalCategory"]
+        AnimalBreed = contentJSON["AnimalBreed"]
+        AnimalSex = contentJSON["AnimalSex"]
+        AnimalOwner = contentJSON["AnimalOwner"]
+        AnimalDOB = contentJSON["AnimalDOB"]
+        AnimalFather = contentJSON["AnimalFather"]
+        AnimalMother = contentJSON["AnimalMother"]
+        AnimalWeight = contentJSON["AnimalWeight"]
+        AnimalPictureBlob = contentJSON["AnimalPictureBlob"]
 
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+    DB = DatabaseByPyMySQL()
+    status = DB.addAnimal(AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalPictureBlob)
+
+    if status:
+        return jsonify({"status": 1}), 200
+    else:
+        return jsonify({"status": 0}), 200
 # 14
+@app.route('/API/DiedAnimal', methods=['POST'])
+def AddDiedAnimal():
+    contentJSON = request.json
+    try:
+        AnimalTag = contentJSON["AnimalTag"]
+        Date = contentJSON["Date"]
+        Cause = contentJSON["Cause"]
 
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+    DB = DatabaseByPyMySQL()
+    status = DB.addDiedAnimal(AnimalTag, Date, Cause)
+
+    if status:
+        return jsonify({"status": 1}), 200
+    else:
+        return jsonify({"status": 0}), 200
 # 15
+@app.route('/API/MissingAnimal', methods=['POST'])
+def MissingAnimal():
+    contentJSON = request.json
+    try:
+        AnimalTag = contentJSON["AnimalTag"]
+        Date = contentJSON["Date"]
 
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+    DB = DatabaseByPyMySQL()
+    status = DB.addMissinAnimal(AnimalTag, Date)
+
+    if status:
+        return jsonify({"status": 1}), 200
+    else:
+        return jsonify({"status": 0}), 200
 # 16
+@app.route('/API/SlaughterAnimal', methods=['POST'])
+def SlaughterAnimal():
+    contentJSON = request.json
+    try:
+        AnimalTag = contentJSON["AnimalTag"]
+        Date = contentJSON["Date"]
+
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+    DB = DatabaseByPyMySQL()
+    status = DB.addSlaughterAnimal(AnimalTag, Date)
+
+    if status:
+        return jsonify({"status": 1}), 200
+    else:
+        return jsonify({"status": 0}), 200
 
 # 17
+@app.route('/API/AddVaccineDetails', methods=['POST'])
+def AddVaccineDetails():
+    contentJSON = request.json
+    try:
+        AnimalTag = contentJSON["AnimalTag"]
+        Date = contentJSON["Date"]
+        Details = contentJSON["Details"]
+
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+    DB = DatabaseByPyMySQL()
+    status = DB.addVaccineDetails(AnimalTag, Date, Details)
+
+    if status:
+        return jsonify({"status": 1}), 200
+    else:
+        return jsonify({"status": 0}), 200
 
 # 18
+@app.route('/API/SearchAnimal', methods=['POST'])
+def AddEmployee():
+    contentJSON = request.json
+    try:
+        UserName = contentJSON["UserName"]
+        UserEmail = contentJSON["UserEmail"]
+        UserPhone = contentJSON["UserPhone"]
+        UserAddress = contentJSON["UserAddress"]
+        UserPass = contentJSON["UserPass"]
 
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+    DB = DatabaseByPyMySQL()
+    status = DB.addEmployee(UserName, UserEmail, UserPhone, UserAddress, UserPass)
+
+    if status:
+        return jsonify({"status": 1}), 200
+    else:
+        return jsonify({"status": 0}), 200
 # 19
+@app.route('/API/AddOwner', methods=['POST'])
+def AddOwner():
+    contentJSON = request.json
+    try:
+        OwnerName = contentJSON["OwnerName"]
 
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+    DB = DatabaseByPyMySQL()
+    status = DB.addOwner(OwnerName)
+
+    if status:
+        return jsonify({"status": 1}), 200
+    else:
+        return jsonify({"status": 0}), 200
 # 20
+@app.route('/API/UpdateAnimal', methods=['POST'])
+def UpdateAnimal():
+    contentJSON = request.json
+    try:
+        AnimalID = contentJSON["AnimalID"]
+        AnimalSex = contentJSON["AnimalSex"]
+        AnimalOwner = contentJSON["AnimalOwner"]
+        AnimalDOB = contentJSON["AnimalDOB"]
+        AnimalFather = contentJSON["AnimalFather"]
+        AnimalMother = contentJSON["AnimalMother"]
+        AnimalWeight = contentJSON["AnimalWeight"]
+        AnimalPictureBlob = contentJSON["AnimalPictureBlob"]
 
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+    DB = DatabaseByPyMySQL()
+    status = DB.updateAnimal(AnimalID, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalPictureBlob)
+
+    if status:
+        return jsonify({"status": 1}), 200
+    else:
+        return jsonify({"status": 0}), 200
 
 
 #################### API END ####################################
