@@ -551,6 +551,33 @@ class DatabaseByPyMySQL:
         else:
             return data, False
 
+    #22
+    def getAnimalPictureByID(self, id):
+        sql_qry = 'SELECT * FROM animalpicture WHERE AnimalID = {0};'.format(id)
+        self.cursor.execute(sql_qry)
+        data = self.cursor.fetchall()
+
+        print('getAnimalPictureByID : ', str(data[0]), flush=True)
+
+        if len(data) > 0:
+            return data[0], True
+        else:
+            return data, False
+
+    #23
+    def getAnimalByCategoryAndSubCat(self, cat, sub):
+
+        sql_qry = 'SELECT * FROM animal WHERE AnimalCategory = "{0}" AND AnimalBreed = "{1}";'.format(cat,sub)
+        self.cursor.execute(sql_qry)
+        data = self.cursor.fetchall()
+
+        print('getAnimalByCategoryAndSubCat : ', str(data), flush=True)
+
+        if len(data) > 0:
+            return data, True
+        else:
+            return data, False
+
 #################### DATABASE END ####################################
 
 #################### API ####################################
@@ -958,7 +985,50 @@ def AnimalsByCategoryAndGender():
     else:
         return jsonify({"status": 0, "data": data}), 200
 
+# 22
+@app.route('/API/AnimalPictureByID', methods=['POST'])
+def AnimalPictureByID():
+    contentJSON = request.json
+    try:
+        ID = contentJSON["ID"]
 
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+    DB = DatabaseByPyMySQL()
+    data, status = DB.getAnimalPictureByID(ID)
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "data": data}), 200
+
+
+#23
+
+@app.route('/API/AnimalsByCategoryAndSubCat', methods=['POST'])
+def AnimalsByCategoryAndSubCat():
+
+    contentJSON = request.json
+
+    try:
+        cat = contentJSON["category"]
+        sub = contentJSON["sub"]
+
+    except:
+        print('Error AnimalsByCategoryAndSubCat = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0, "data": "NULL"}), 400
+
+
+
+    DB = DatabaseByPyMySQL()
+    data, status = DB.getAnimalByCategoryAndSubCat(cat, sub)
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "data": data}), 200
 #################### API END ####################################
 
 #################### WEBSITE ####################################
