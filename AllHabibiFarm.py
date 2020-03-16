@@ -1,4 +1,6 @@
+import base64
 import hashlib
+import os
 import sys
 
 
@@ -6,7 +8,16 @@ from flask import Flask, render_template, request, flash, url_for, send_from_dir
 import pymysql
 from datetime import datetime
 
+from werkzeug.utils import secure_filename
+
+UPLOAD_FOLDER = 'static/UPLOADS/'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}  # {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+
+
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+
 '''pEKa_p=P-y2]
 bdpibkmt_al_habibi_farm
 bdpibkmt_flask_all_habibi_farm
@@ -557,6 +568,14 @@ class DatabaseByPyMySQL:
         self.cursor.execute(sql_qry)
         data = self.cursor.fetchall()
 
+        print(data[0]['AnimalPictureBlob'], flush=True)
+
+        blob = data[0]['AnimalPictureBlob']
+
+        encrypted_text = base64.b64encode(blob)
+
+        print(str(type(encrypted_text))+' '+encrypted_text, flush=True)
+
         print('getAnimalPictureByID : ', str(data[0]), flush=True)
 
         if len(data) > 0:
@@ -577,6 +596,8 @@ class DatabaseByPyMySQL:
             return data, True
         else:
             return data, False
+
+
 
 #################### DATABASE END ####################################
 
@@ -1029,12 +1050,74 @@ def AnimalsByCategoryAndSubCat():
         return jsonify({"status": 1, "data": data}), 200
     else:
         return jsonify({"status": 0, "data": data}), 200
+
+#24
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def uploadFile():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'AnimalPic' not in request.files:
+            print('No file part', flush=True)
+            return redirect(request.url)
+        file = request.files['dishPic']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filename = str("FILE") + filename[-4:]
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            DishName = request.form['DishName']
+            DishDes = request.form['DishDes']
+            DishPrice = request.form['DishPrice']
+            isAvailable = request.form['isAvailable']
+            DishMenu = request.form['DishMenu']
+
+            db = DatabaseByPyMySQL()
+            status = db.addDish(dishName=DishName, dishDes=DishDes, dishPrice=DishPrice, dishPic=filename,
+                                isAvailable=isAvailable, menu_id=DishMenu)
+
+def uploadFileTuto():
+    @app.route('/file-upload', methods=['POST'])
+    def upload_file():
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            resp = jsonify({'message': 'No file part in the request'})
+            resp.status_code = 400
+            return resp
+        file = request.files['file']
+        if file.filename == '':
+            resp = jsonify({'message': 'No file selected for uploading'})
+            resp.status_code = 400
+            return resp
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            resp = jsonify({'message': 'File successfully uploaded'})
+            resp.status_code = 201
+            return resp
+        else:
+            resp = jsonify({'message': 'Allowed file types are txt, pdf, png, jpg, jpeg, gif'})
+            resp.status_code = 400
+            return resp
+
 #################### API END ####################################
 
 #################### WEBSITE ####################################
 @app.route('/')
 def home():
-   return render_template('')
+    db = DatabaseByPyMySQL()
+    data = db.getAnimalPictureByID(1)
+    return 'HELLO'
+    #return render_template('')
 
 #################### WEBSITE END ####################################
 
