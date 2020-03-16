@@ -2,26 +2,24 @@ import base64
 import hashlib
 import os
 import sys
-
+import time
 
 from flask import Flask, render_template, request, flash, url_for, send_from_directory, jsonify, session, abort, redirect
 import pymysql
 from datetime import datetime
-
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = 'static/UPLOADS/'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}  # {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = { 'png', 'jpg', 'jpeg'}  # {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Lambda Function
+current_milli_time = lambda: int(round(time.time() * 1000))
 
-'''pEKa_p=P-y2]
-bdpibkmt_al_habibi_farm
-bdpibkmt_flask_all_habibi_farm
-'''
+
 #################### DATABASE ####################################
 
 class DatabaseByPyMySQL:
@@ -330,7 +328,7 @@ class DatabaseByPyMySQL:
             return data, False
 
     # 13
-    def addAnimal(self, AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalPictureBlob):
+    def addAnimal(self, AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalPictureName):
 
         try:
             last_id, sts = self.getAnimalLastID()
@@ -345,20 +343,12 @@ class DatabaseByPyMySQL:
             addedDate = str(now.strftime("%d-%m-%Y"))
 
             # Adding
-            sql1 = 'INSERT INTO animal(AnimalID, AnimalTag, AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalStatus, AddedDate, UpdatedDate)' \
-                   ' VALUES({0},"{1}","{2}","{3}","{4}","{5}","{6}","{7}","{8}",{9},"ALIVE","{10}","{11}");'.format(animal_id, animal_tag, AnimalCategory, AnimalBreed, AnimalSex,
-                                                                                                                    AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, addedDate, addedDate)
+            sql1 = 'INSERT INTO animal(AnimalID, AnimalTag, AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalStatus, AddedDate, UpdatedDate, AnimalPictureName)' \
+                   ' VALUES({0},"{1}","{2}","{3}","{4}","{5}","{6}","{7}","{8}",{9},"ALIVE","{10}","{11}","{12}");'.format(animal_id, animal_tag, AnimalCategory, AnimalBreed, AnimalSex,
+                                                                                                                    AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, addedDate, addedDate,AnimalPictureName)
             print(sql1, flush=True)
             self.cursor.execute(sql1)
             self.conection.commit()
-
-
-
-            sql2 = 'INSERT INTO animalpicture (AnimalID, AnimalPictureBlob) VALUES({0}, "{1}")'.format(animal_id, AnimalPictureBlob)
-            self.cursor.execute(sql2)
-            self.conection.commit()
-
-            print(sql2, flush=True)
 
             self.updateCommonData(AnimalCategory, 'ADD')
 
@@ -1075,39 +1065,42 @@ def uploadFile():
             filename = str("FILE") + filename[-4:]
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            DishName = request.form['DishName']
-            DishDes = request.form['DishDes']
-            DishPrice = request.form['DishPrice']
-            isAvailable = request.form['isAvailable']
-            DishMenu = request.form['DishMenu']
 
-            db = DatabaseByPyMySQL()
+            '''db = DatabaseByPyMySQL()
             status = db.addDish(dishName=DishName, dishDes=DishDes, dishPrice=DishPrice, dishPic=filename,
-                                isAvailable=isAvailable, menu_id=DishMenu)
+                                isAvailable=isAvailable, menu_id=DishMenu)'''
 
-def uploadFileTuto():
-    @app.route('/file-upload', methods=['POST'])
-    def upload_file():
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            resp = jsonify({'message': 'No file part in the request'})
-            resp.status_code = 400
-            return resp
-        file = request.files['file']
-        if file.filename == '':
-            resp = jsonify({'message': 'No file selected for uploading'})
-            resp.status_code = 400
-            return resp
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            resp = jsonify({'message': 'File successfully uploaded'})
-            resp.status_code = 201
-            return resp
-        else:
-            resp = jsonify({'message': 'Allowed file types are txt, pdf, png, jpg, jpeg, gif'})
-            resp.status_code = 400
-            return resp
+@app.route('/API/uploadFileAnimalPicture', methods=['POST'])
+def uploadFileAnimalPicture():
+    contentJSON = request.json
+
+    # check if the post request has the file part
+    if 'AnimalPictureFile' not in request.files:
+        print('No file part in the request',flush=True)
+        resp = jsonify({'message': 'No file part in the request'})
+        resp.status_code = 400
+        return resp
+    file = request.files['AnimalPictureFile']
+    if file.filename == '':
+        print('No file selected for uploading', flush=True)
+        resp = jsonify({'message': 'No file selected for uploading'})
+        resp.status_code = 400
+        return resp
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        fileName = str(current_milli_time()) + filename[-4:]
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], fileName))
+
+        print('File successfully uploaded',flush=True)
+        resp = jsonify({'message': 'File successfully uploaded', 'fileName':fileName})
+        resp.status_code = 201
+        return resp
+    else:
+        resp = jsonify({'message': 'Allowed file types are txt, pdf, png, jpg, jpeg, gif'})
+        resp.status_code = 400
+        return resp
+
+
 
 #################### API END ####################################
 
