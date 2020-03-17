@@ -1,0 +1,22 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}
+    <title>Al Habibi Farm</title>
+{% endblock %}
+
+{% block page_header %}
+
+    <h2 class="pageheader-title">Admin</h2>
+
+    <div class="page-breadcrumb">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page"><a href="{{ url_for('admin_add_animal')}}" class="breadcrumb-link">Add / Animal</a></li>
+            </ol>
+        </nav>
+    </div>
+
+{% endblock %}
+
+{% block content %}
+{% endblock %}

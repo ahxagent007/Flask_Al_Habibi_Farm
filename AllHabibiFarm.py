@@ -1155,7 +1155,7 @@ def admin_add_animal():
     return render_template('admin_add_animal.html', data=data)
 
 
-@app.route('/Admin/Add/GetDetailsSelect', methods=['POST', 'GET'])
+@app.route('/Admin/Add/GetDetailsSelect', methods=['POST'])
 def get_all_options():
     cat = request.form.get('cat')
 
@@ -1183,7 +1183,56 @@ def get_all_options():
         return jsonify("")
 
 
+@app.route('/Admin/Add/Employee', methods=['POST', 'GET'])
+def admin_add_employee():
 
+    if request.method == 'POST':
+        print('POST', flush=True)
+
+        try:
+            category = request.form['AnimalCategory']
+            breed = request.form['AnimalBreed']
+            sex = request.form['AnimalSex']
+            owner = request.form['AnimalOwner']
+            dob = request.form['AnimalDOB']
+            dob = dob[8:10] + '-' + dob[5:7] + '-' + dob[0:4]  # 0123 4 56 7 89
+            weight = request.form['AnimalWeight']
+        except:
+            return render_template('admin_add_employee.html', msg='False')
+            print('Error = ', str(sys.exc_info()[0]), flush=True)
+
+    return render_template('admin_add_employee.html')
+
+@app.route('/Admin/Add/Owner', methods=['POST', 'GET'])
+def admin_add_owner():
+
+    if request.method == 'POST':
+        #asdasd
+        print('POST', flush=True)
+
+    return render_template('admin_add_animal.html')
+
+
+
+
+@app.route('/Admin/Animals/Goat', methods=['POST', 'GET'])
+def goats():
+    return render_template('animals_list.html')
+
+
+@app.route('/Admin/Animals/Sheep', methods=['POST', 'GET'])
+def Sheeps():
+    return render_template('animals_list.html')
+
+
+@app.route('/Admin/Animals/Camel', methods=['POST', 'GET'])
+def Camels():
+    return render_template('animals_list.html')
+
+
+@app.route('/Admin/Animals/Horse', methods=['POST', 'GET'])
+def Horses():
+    return render_template('animals_list.html')
 
 
 
