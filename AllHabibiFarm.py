@@ -15,6 +15,7 @@ ALLOWED_EXTENSIONS = { 'png', 'jpg', 'jpeg'}  # {'txt', 'pdf', 'png', 'jpg', 'jp
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.secret_key = 'SECRETKEYXIAN'
 
 # Lambda Function
 current_milli_time = lambda: int(round(time.time() * 1000))
@@ -552,26 +553,7 @@ class DatabaseByPyMySQL:
         else:
             return data, False
 
-    #22
-    def getAnimalPictureByID(self, id):
-        sql_qry = 'SELECT * FROM animalpicture WHERE AnimalID = {0};'.format(id)
-        self.cursor.execute(sql_qry)
-        data = self.cursor.fetchall()
 
-        print(data[0]['AnimalPictureBlob'], flush=True)
-
-        blob = data[0]['AnimalPictureBlob']
-
-        encrypted_text = base64.b64encode(blob)
-
-        print(str(type(encrypted_text))+' '+encrypted_text, flush=True)
-
-        print('getAnimalPictureByID : ', str(data[0]), flush=True)
-
-        if len(data) > 0:
-            return data[0], True
-        else:
-            return data, False
 
     #23
     def getAnimalByCategoryAndSubCat(self, cat, sub):
@@ -587,6 +569,20 @@ class DatabaseByPyMySQL:
         else:
             return data, False
 
+
+    # NEW CODES 17-03-2020
+
+    def getSubCategory(self,cat):
+        sql_qry = 'SELECT * FROM animalcategory WHERE AcCat = "{0}";'.format(cat)
+        self.cursor.execute(sql_qry)
+        data = self.cursor.fetchall()
+
+        print('getSubCategory : ', str(data), flush=True)
+
+        if len(data) > 0:
+            return data, True
+        else:
+            return data, False
 
 
 #################### DATABASE END ####################################
@@ -996,28 +992,8 @@ def AnimalsByCategoryAndGender():
     else:
         return jsonify({"status": 0, "data": data}), 200
 
-# 22
-@app.route('/API/AnimalPictureByID', methods=['POST'])
-def AnimalPictureByID():
-    contentJSON = request.json
-    try:
-        ID = contentJSON["ID"]
-
-    except:
-        print('Error = ', str(sys.exc_info()[0]), flush=True)
-        return jsonify({"status": 0, "data": "NULL"}), 400
-
-    DB = DatabaseByPyMySQL()
-    data, status = DB.getAnimalPictureByID(ID)
-
-    if status:
-        return jsonify({"status": 1, "data": data}), 200
-    else:
-        return jsonify({"status": 0, "data": data}), 200
-
 
 #23
-
 @app.route('/API/AnimalsByCategoryAndSubCat', methods=['POST'])
 def AnimalsByCategoryAndSubCat():
 
@@ -1042,7 +1018,6 @@ def AnimalsByCategoryAndSubCat():
         return jsonify({"status": 0, "data": data}), 200
 
 #24
-
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -1105,12 +1080,194 @@ def uploadFileAnimalPicture():
 #################### API END ####################################
 
 #################### WEBSITE ####################################
+
+
 @app.route('/')
-def home():
+def admin():
+
+    return render_template('admin.html')
+
+
+@app.route('/Admin/Add/Animal', methods=['POST', 'GET'])
+def admin_add_animal():
+
     db = DatabaseByPyMySQL()
-    data = db.getAnimalPictureByID(1)
-    return 'HELLO'
-    #return render_template('')
+    owner, bool = db.getAllOwner()
+    data = {
+        'cat': {'GOAT', 'SHEEP', 'HORSE', 'CAMEL'},
+        'owner' : owner
+    }
+    if request.method == 'POST':
+        print('POST', flush=True)
+
+        # check if the post request has the file part
+        if 'AnimalPic' not in request.files:
+            print('No file part', flush=True)
+            return render_template('admin_add_animal.html', msg='False', data=data)
+        file = request.files['AnimalPic']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            print('No selected file',flush=True)
+            return render_template('admin_add_animal.html', msg='False', data=data)
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filename = str(current_milli_time()) + filename[-4:]
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            print(filename, flush=True)
+
+
+
+            try:
+                father = request.form['AnimalFather']
+            except:
+                father = 'NULL'
+                print('Error = ', str(sys.exc_info()[0]), flush=True)
+
+            try:
+                mother = request.form['AnimalMother']
+            except:
+                mother = 'NULL'
+                print('Error = ', str(sys.exc_info()[0]), flush=True)
+
+            try:
+                category = request.form['AnimalCategory']
+                breed = request.form['AnimalBreed']
+                sex = request.form['AnimalSex']
+                owner = request.form['AnimalOwner']
+                dob = request.form['AnimalDOB']
+                dob = dob[8:10]+'-'+dob[5:7]+'-'+dob[0:4]             #0123 4 56 7 89
+                weight = request.form['AnimalWeight']
+            except:
+                return render_template('admin_add_animal.html', msg='False', data=data)
+                print('Error = ', str(sys.exc_info()[0]), flush=True)
+
+            print('DOB : '+str(dob), flush=True)
+
+            db = DatabaseByPyMySQL()
+            status = db.addAnimal(category, breed, sex, owner, dob, father, mother, weight, filename)
+
+            print(str(status), flush=True)
+            return render_template('admin_add_animal.html', msg=str(status), data=data)
+
+    return render_template('admin_add_animal.html', data=data)
+
+
+@app.route('/Admin/Add/GetDetailsSelect', methods=['POST', 'GET'])
+def get_all_options():
+    cat = request.form.get('cat')
+
+    db = DatabaseByPyMySQL()
+    data, bool1 = db.getSubCategory(cat)
+    animalMale, bool2 = db.getAnimalByCategoryAndGender(cat, 'Male')
+    animalFemale, bool3 = db.getAnimalByCategoryAndGender(cat, 'Female')
+
+    if not bool2:
+        animalMale = []
+    if not bool3:
+        animalFemale = []
+
+    allData = {
+        'breed' : data,
+        'male' : animalMale,
+        'female' : animalFemale
+    }
+
+    if bool:
+        print('FOUND DATA =  ' + str(len(allData)), flush=True)
+        return jsonify(allData)
+    else:
+        print('NOT FOUND ANY DATA!! ', flush=True)
+        return jsonify("")
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route('/Login')
+def login():
+
+    if session.get('id') is not None:
+        if session['type'] == 'EMP':
+            print('EMP FOUND !!', flush=True)
+            return redirect(url_for('sales_dashboard'))
+
+        elif session['type'] == 'MNG':
+            print('MNG FOUND !!', flush=True)
+            return redirect(url_for('manager_dashboard'))
+
+        elif session['type'] == 'CUS':
+            print('CUS FOUND !!', flush=True)
+            return redirect(url_for('customer_dashboard'))
+
+        else:
+            abort(401)
+    else:
+        return render_template('login.html')
+
+@app.route('/Login', methods=['POST'])
+def login_request():
+    if request.method == 'POST':
+        EmailOrPhone = request.form['emailOrPhone']
+        Password = request.form['pass']
+
+        print(EmailOrPhone+' '+Password, flush=True)
+
+        db = DatabaseByPyMySQL()
+
+        status, user_id = db.Login(email=EmailOrPhone, phone=EmailOrPhone, password=Password)
+
+        if(status):
+            user = db.getUserByID(user_id)
+
+            session['id'] = user[0]['user_id']
+            session['phone'] = user[0]['phone_no']
+            session['mail'] = user[0]['email']
+            session['type'] = user[0]['type']
+            session['address'] = user[0]['address']
+            session['name'] = user[0]['name']
+
+            if session['type'] == 'EMP':
+                print('EMP FOUND !!', flush=True)
+                return redirect(url_for('sales_dashboard'))
+
+            elif session['type'] == 'MNG':
+                print('MNG FOUND !!', flush=True)
+                return redirect(url_for('manager_dashboard'))
+
+            elif session['type'] == 'CUS':
+                print('CUS FOUND !!', flush=True)
+                return redirect(url_for('customer_dashboard'))
+
+            else:
+                abort(401)
+
+        else:
+            print(status, flush=True)
+
+
+    return render_template('login.html')
+
+@app.route('/Logout')
+def logout():
+    session.pop('id', None)
+    session.pop('phone', None)
+    session.pop('mail', None)
+    session.pop('type', None)
+    session.pop('address', None)
+    session.pop('name', None)
+
+    return redirect(url_for('login'))
 
 #################### WEBSITE END ####################################
 

@@ -1,0 +1,303 @@
+{% extends 'base_salesman.html' %}
+
+
+{% block title %}
+    <title>RMS - Sales</title>
+{% endblock %}
+
+{% block page_header %}
+
+    <h2 class="pageheader-title">Order</h2>
+
+    <div class="page-breadcrumb">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page"><a href="" class="breadcrumb-link">Order</a></li>
+            </ol>
+        </nav>
+    </div>
+
+{% endblock %}
+
+
+{% block content %}
+    <row>
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="card">
+                <h5 class="card-header">Order Details</h5>
+                <div class="card-body">
+                    <form  data-parsley-validate="" method="POST"> <!-- action="{{url_for('order_Done')}}" id="orderForm"-->
+
+
+                        <div class="form-group">
+                            <label for="CustomerName">Customer Name</label>
+                            <input id="CustomerName" type="text" name="CustomerName" data-parsley-trigger="change" required="" placeholder="Customer name" autocomplete="off" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="CustomerPhone">Customer Phone Number</label>
+                            <input id="CustomerPhone" type="tel" name="CustomerPhone" data-parsley-trigger="change" required="" placeholder="phone number" autocomplete="off" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="CustomerEmail">Email address</label>
+                            <input id="CustomerEmail" type="email" name="CustomerEmail" data-parsley-trigger="change" placeholder="email" autocomplete="off" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="CustomerAddress">Customer Address</label>
+                            <input id="CustomerAddress" type="text" name="CustomerAddress" data-parsley-trigger="change"  placeholder="address" autocomplete="off" class="form-control">
+                        </div>
+
+
+                        <div class="row">
+                            <div class="col-xl-7 col-lg-7 col-md-7 col-sm-12 col-7">
+
+                                <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+
+                                        <div class="form-group">
+                                            <input id="SearchDish" type="text" name="SearchDish" data-parsley-trigger="change" placeholder="Search Dish" autocomplete="off" class="form-control">
+                                        </div>
+                                    </div>
+
+                                <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                                    <table id="DishSearchTable" class="table table-hover">
+
+                                        <tbody id="dish_result" class="dish_result_class">
+
+                                            
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                            </div>
+
+                            <!-- ============================================================== -->
+                            <!-- hoverable table -->
+                            <!-- ============================================================== -->
+                            <div class="col-xl-5 col-lg-5 col-md-5 col-sm-12 col-5">
+                                <div class="card">
+                                    <h5 class="card-header">Order List</h5>
+                                    <div class="card-body">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">#</th>
+                                                    <th scope="col">Name</th>
+                                                    <th scope="col">Quantity</th>
+                                                    <th scope="col">Price</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="OrderTable" class="OrderTableClass">
+
+
+                                            </tbody>
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col"></th>
+                                                    <th scope="col">Total Bill</th>
+                                                    <th scope="col"></th>
+                                                    <th scope="col"><div id="totalBill"></div></th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div>
+
+                                </div>
+                            </div>
+                            <!-- ============================================================== -->
+                            <!-- end hoverable table -->
+                            <!-- ============================================================== -->
+
+                        </div>
+
+
+
+
+                        <div class="row">
+                            <div class="col-sm-6 pb-2 pb-sm-4 pb-lg-0 pr-0">
+
+                            </div>
+                            <div class="col-sm-6 pl-0">
+                                <p class="text-right">
+                                    <button type="submit" onclick="orderDone()" class="btn btn-space btn-primary">Submit</button>
+                                    <button type="reset" class="btn btn-space btn-secondary">Cancel</button>
+                                </p>
+                            </div>
+                        </div>
+
+
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </row>
+
+
+
+{% endblock %}
+
+{% block customJS %}
+    <script>
+        
+        function Order(id, quantity, comment) {
+          this.id = id;
+          this.quantity = quantity;
+          this.comment = comment;
+        }
+        
+        function FinalOrder(orders, name, email, number, address, totalBill) {
+          this.orders = orders;
+          this.name = name;
+          this.email = email;
+          this.number = number;
+          this.address = address;
+            this.totalBill = totalBill;
+        
+        }
+        
+        var orders = [];
+        var serial = 0;
+        var totalBill = 0;
+
+        $(document).ready(function(){
+
+            $("#SearchDish").on("input", function(e){
+                text = $("#SearchDish").val();
+                console.log(text);
+
+                //dish_result tbody
+                //DishSearchTable tID
+
+                $.ajax({
+                    method:"post",
+                    url:"/Sales/Order/LiveSearch",
+                    data: {search_text:text},
+                    success:function(result){
+                        var divi = '';
+                        //console.log(result);
+                        
+                         document.getElementById('dish_result').innerHTML = "";
+
+                        result.forEach((item) => {
+                            
+                          console.log('ID: ' + item.dish_id);
+                          console.log('price: ' + item.dish_price);
+                          console.log('name: ' + item.dish_name);
+                          console.log('pic: ' + item.dish_pic);
+                          console.log('des: ' + item.dish_des);
+                          console.log('available: ' + item.isAvailable);
+
+
+                          var tbl = '<tr>'
+                                            +'<td width="30%">'
+                                             +'   <img class="img-fluid" src="../static/UPLOADS/'+item.dish_pic+'" alt="Card image cap">'
+                                            +'</td>'+
+
+                                            '<td width="30%">'+
+                                                '<h3 class="card-title">'+item.dish_name+'</h3>'+
+                                                '<p class="card-text">Price : '+item.dish_price+' BDT</p>'+
+                                                '<p class="card-text">'+item.dish_des+'</p>'+
+
+                                            '</td>'+
+
+                                            '<td width="30%">'+
+                                                 '<ul class="list-group list-group-flush">'+
+                                                    '<li class="list-group-item">'+
+                                                        '<input id="Q'+item.dish_id+'" type="number" placeholder="Order Quantity" autocomplete="off" class="form-control">'+
+                                                    '</li>'+
+                                                    '<li class="list-group-item">'+
+                                                        '<input id="C'+item.dish_id+'" type="text" placeholder="Comment" class="form-control">'+
+                                                    '</li>'+
+                                                '</ul>'+
+
+                                            '</td>'+
+
+                                           '<td width="10%">'+
+                                                '<div class="card-body">'+
+                                                    '<a onclick="addDish('+item.dish_id+',\''+item.dish_name+'\' ,'+item.dish_price+')" class="btn btn-warning">Add</a>'+
+                                                '</div>'+
+
+                                            '</td>'+
+
+                                        '</tr>';
+
+                          $('.dish_result_class').append(tbl); // end append
+                        
+                            
+
+
+                        });
+
+                        }
+
+                });
+            });
+        });
+
+        function addDish(id, name, price) {
+            var inputQuantity = document.getElementById("Q"+id).value;
+            var inputComment = document.getElementById("C"+id).value;
+            //alert("id: "+id+" Q: "+inputQuantity+" C: "+inputComment );
+
+            var order_tab = '<tr>'+
+                                '<th scope="row">'+serial+++'</th>'+
+                                '<td>'+name+'</td>'+
+                                '<td>'+inputQuantity+'</td>'+
+                                '<td>'+inputQuantity*price+'</td>'+
+                            '</tr>';
+            $('#OrderTable').append(order_tab);            
+            
+            totalBill = totalBill + price*inputQuantity;
+            
+            document.getElementById("totalBill").innerHTML = ""+totalBill;
+            
+            var temp = new Order(id, inputQuantity, inputComment);
+            orders.push(temp);
+            
+            
+            console.log(orders);
+        }
+        
+        function orderDone(){
+            
+            
+            var name = document.getElementById("CustomerName").value;
+            var phone = document.getElementById("CustomerPhone").value;
+            var email = document.getElementById("CustomerEmail").value;
+            var address = document.getElementById("CustomerAddress").value;
+            
+            var finalOrder = new FinalOrder(orders, name, email, phone, address, totalBill);
+
+           $.ajax({
+                 type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(finalOrder),
+                dataType: 'json',
+                url: '/Sales/Order/Done',
+                success: function (e) {
+                    console.log(e);
+                    //window.location = "http://192.168.57.223:5000/preview";
+                },
+                error: function(error) {
+                console.log(error);
+            }
+            });
+            
+        }
+
+    </script>
+
+
+{% endblock %}
+
+
+
+
+
+            

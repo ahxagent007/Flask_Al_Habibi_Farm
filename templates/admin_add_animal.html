@@ -1,0 +1,199 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}
+    <title>RMS - Manager</title>
+{% endblock %}
+
+{% block page_header %}
+
+    <h2 class="pageheader-title">Admin</h2>
+
+    <div class="page-breadcrumb">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page"><a href="{{ url_for('admin_add_animal')}}" class="breadcrumb-link">Add / Animal</a></li>
+            </ol>
+        </nav>
+    </div>
+
+{% endblock %}
+
+{% block content %}
+
+    {% if msg == 'True'  %}
+        <div class="card-body border-top">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Sucess!</strong> Animal added.
+                <a href="#" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </a>
+            </div>
+        </div>
+    {% elif msg == 'False' %}
+            <div class="card-body border-top">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Something went wrong!</strong> Try Aganin!!!
+                    <a href="#" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </a>
+                </div>
+            </div>
+
+    {% endif %}
+
+    <row>
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="card">
+                <h5 class="card-header">Add Animal</h5>
+                <div class="card-body">
+                    <form action="{{url_for('admin_add_animal')}}" id="basicform" data-parsley-validate="" method="post" enctype=multipart/form-data>
+
+                        <div class="form-group">
+                            <label for="AnimalCategory">Choose Category:</label>
+
+                            <select id="AnimalCategory" name="AnimalCategory" class="form-control">
+                                <option value="">Select</option>
+                                {% for cat in data['cat'] %}
+                              <option value="{{cat}}">{{cat}}</option>
+                                {% endfor %}
+                            </select>
+
+                        </div>
+                        
+                        <div id="options_id" class="options_class"> 
+                        
+                        
+                        </div>
+
+                        <div class="form-group">
+                            <label for="AnimalSex">Animal Sex</label>
+
+                            <select id="AnimalSex" name="AnimalSex" class="form-control">
+
+                              <option value="Male">Male</option>
+                              <option value="Male">Female</option>
+
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="AnimalOwner">Choose Owner:</label>
+
+                            <select id="AnimalOwner" name="AnimalOwner" class="form-control">
+                                {% for owner in data['owner'] %}
+                              <option value="{{owner['OwnerName']}}">{{owner['OwnerName']}}</option>
+                                {% endfor %}
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+                            <label for="AnimalDOB">Date of birth:</label><br>
+                            <input type="date" id="AnimalDOB" name="AnimalDOB">
+
+                        </div>
+                        <div class="form-group">
+                            <label for="AnimalWeight" class="col-form-label">Animal Weight</label>
+                            <input id="AnimalWeight" type="number" step="0.01" class="form-control" placeholder="Weight" name="AnimalWeight">
+                        </div>
+
+
+                        <div class="custom-file mb-3">
+                            <input type="file" class="custom-file-input" id="AnimalPic" name="AnimalPic">
+                            <label class="custom-file-label" for="AnimalPic">Add Picture</label>
+                        </div>
+
+
+                        <div class="row">
+                            <div class="col-sm-6 pl-0">
+                                <p class="text-right">
+                                    <button type="submit" class="btn btn-space btn-primary">Submit</button>
+                                    <button class="btn btn-space btn-secondary">Cancel</button>
+                                </p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </row>
+
+{% endblock %}
+
+{% block customJS %}
+    <script>
+        
+        
+        $('#AnimalCategory').change(function() {
+            var data = "";
+            var selected = $(this).val();
+            
+            console.log(selected);
+            
+            $.ajax({
+                type:"POST",
+                url:"/Admin/Add/GetDetailsSelect",
+                data: {cat:selected},
+                async: false,
+                success : function(result) {
+                    data = result;
+                    
+                    document.getElementById('options_id').innerHTML = "";
+                    
+                    var breed = data.breed;
+                    var male = data.male;
+                    var female = data.female;
+                    
+                    var tempBreed = "";
+                    var tempMale = "";
+                    var tempFemale = "";                            
+                    var variableDiv = "";
+                    
+                    breed.forEach((b) => {
+                            console.log(b.AcSubCat);
+                            tempBreed = tempBreed.concat('<option value="'+b.AcSubCat+'">'+b.AcSubCat+'</option>');            
+                        });
+                    
+                    variableDiv = variableDiv.concat(' <div class="form-group">'+
+                    '<label for="AnimalBreed">Choose Breed:</label>'+
+                    '<select id="AnimalBreed" name="AnimalBreed" class="form-control">'+
+                        tempBreed+
+                    '</select></div>');
+                    
+                    
+                    male.forEach((m) => {
+                            console.log(m.AnimalTag);
+                            tempMale = tempMale.concat('<option value="'+m.AnimalTag+'">'+m.AnimalTag+'</option>');            
+                        });
+                    
+                    variableDiv = variableDiv.concat(' <div class="form-group">'+
+                    '<label for="AnimalFather">Choose Father:</label>'+
+                    '<select id="AnimalFather" name="AnimalFather" class="form-control">'+
+                        tempMale+
+                    '</select></div>');
+                    
+                    
+                    female.forEach((f) => {
+                            console.log(f.AnimalTag);
+                            tempFemale = tempFemale.concat('<option value="'+f.AnimalTag+'">'+f.AnimalTag+'</option>');            
+                        });
+                    
+                    variableDiv = variableDiv.concat(' <div class="form-group">',
+                    '<label for="AnimalMother">Choose Mother:</label>',
+                    '<select id="AnimalMother" name="AnimalMother" class="form-control">',
+                        tempFemale,'</select></div>');
+                    
+                
+                    $('.options_class').append(variableDiv) // end append
+
+                },
+                error: function() {
+                    alert('Error occured');
+                }
+            });
+            
+            
+        });
+
+    </script>
+{% endblock %}
