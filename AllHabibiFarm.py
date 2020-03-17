@@ -1187,19 +1187,28 @@ def get_all_options():
 def admin_add_employee():
 
     if request.method == 'POST':
-        print('POST', flush=True)
-
         try:
-            category = request.form['AnimalCategory']
-            breed = request.form['AnimalBreed']
-            sex = request.form['AnimalSex']
-            owner = request.form['AnimalOwner']
-            dob = request.form['AnimalDOB']
-            dob = dob[8:10] + '-' + dob[5:7] + '-' + dob[0:4]  # 0123 4 56 7 89
-            weight = request.form['AnimalWeight']
+            EmployeeName = request.form['EmployeeName']
+            EmployeePhoneNumber = request.form['EmployeePhoneNumber']
+            EmployeeEmail = request.form['EmployeeEmail']
+            EmployeeAddress = request.form['EmployeeAddress']
+            EmployeePass = request.form['EmployeePass']
+
         except:
             return render_template('admin_add_employee.html', msg='False')
             print('Error = ', str(sys.exc_info()[0]), flush=True)
+
+        db = DatabaseByPyMySQL()
+        sts = db.isEmailExist(EmployeeEmail)
+
+        if not sts:
+            sts1 = db.addEmployee(EmployeeName, EmployeeEmail, EmployeePhoneNumber, EmployeeAddress, EmployeePass)
+            if sts1:
+                return render_template('admin_add_employee.html', msg='success')
+            else:
+                return render_template('admin_add_employee.html', msg='failed')
+        else:
+            return render_template('admin_add_employee.html', msg='user_exist')
 
     return render_template('admin_add_employee.html')
 
