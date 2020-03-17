@@ -1193,6 +1193,7 @@ def admin_add_employee():
             EmployeeEmail = request.form['EmployeeEmail']
             EmployeeAddress = request.form['EmployeeAddress']
             EmployeePass = request.form['EmployeePass']
+            md5pass = hashlib.md5(EmployeePass.encode("utf").hexdigest())
 
         except:
             return render_template('admin_add_employee.html', msg='False')
@@ -1202,7 +1203,7 @@ def admin_add_employee():
         sts = db.isEmailExist(EmployeeEmail)
 
         if not sts:
-            sts1 = db.addEmployee(EmployeeName, EmployeeEmail, EmployeePhoneNumber, EmployeeAddress, EmployeePass)
+            sts1 = db.addEmployee(EmployeeName, EmployeeEmail, EmployeePhoneNumber, EmployeeAddress, md5pass)
             if sts1:
                 return render_template('admin_add_employee.html', msg='success')
             else:
@@ -1216,10 +1217,19 @@ def admin_add_employee():
 def admin_add_owner():
 
     if request.method == 'POST':
-        #asdasd
-        print('POST', flush=True)
+        try:
+            OwnerName = request.form['OwnerName']
 
-    return render_template('admin_add_animal.html')
+            db = DatabaseByPyMySQL()
+            sts = db.addOwner(OwnerName)
+
+            return render_template('admin_add_owner.html', msg=str(sts))
+
+        except:
+            return render_template('admin_add_owner.html', msg='False')
+            print('Error = ', str(sys.exc_info()[0]), flush=True)
+
+    return render_template('admin_add_owner.html')
 
 
 
