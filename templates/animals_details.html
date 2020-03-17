@@ -1,0 +1,53 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}
+    <title>Al Habibi Farm</title>
+{% endblock %}
+
+{% block page_header %}
+
+    <h2 class="pageheader-title">Admin</h2>
+
+    <div class="page-breadcrumb">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page"><a href="{{ url_for('admin_add_animal')}}" class="breadcrumb-link">Animal Details</a></li>
+            </ol>
+        </nav>
+    </div>
+
+{% endblock %}
+
+{% block content %}
+    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 col-lg-12 col-md-12 col-sm-12 col-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">{{animal['AnimalTag']}}</h3>
+                <p class="card-text">{{animal['AnimalCategory']}} ({{animal['AnimalBreed']}})</p>
+                <p class="card-text">Sex: {{animal['AnimalSex']}}</p>
+                <p class="card-text">Owner: {{animal['AnimalOwner']}}</p>
+                <p class="card-text">Date of Birth: {{animal['AnimalDOB']}} Age: {{age['years']}} years ({{age['days']}} days)</p>
+                <p class="card-text">Father: {{animal['AnimalFather']}} Mother: {{animal['AnimalMother']}}</p>
+                <p class="card-text">Weight: {{animal['AnimalWeight']}}</p>
+                <p class="card-text">Status: {{animal['AnimalStatus']}} ({{animal['AnimalStatusDate']}} - {{animal['AnimalStatusCause']}})</p>
+                <p class="text-muted">Last Update: {{animal['UpdatedDate']}}</p>
+            </div>
+
+            <div class="card-body">
+                <h3 class="card-title">Vaccine History</h3>
+                {% for vacc in vac %}
+                <p class="card-text"> {{vacc['VDate']}} : {{vacc['VDetails']}}</p>
+                {% endfor %}
+
+            </div>
+
+
+            <img class="img-fluid" src="/static/UPLOADS/{{animal['AnimalPictureName']}}" alt="{{animal['AnimalTag']}}p">
+
+
+            <br><a href="/Admin/Animals/Update/{{animal['AnimalID']}}" class="btn btn-warning">Edit</a>
+            <br><a href="/Admin/Animals/Delete/{{animal['AnimalID']}}" class="btn btn-danger">Delete</a>
+        </div>
+    </div>
+
+{% endblock %}

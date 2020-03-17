@@ -291,7 +291,7 @@ class DatabaseByPyMySQL:
 
     # #10
     def getVaccineHistory(self, AnimalTag):
-        sql_qry = 'SELECT * FROM vaccindetails WHERE AnimalTag = "{0}";'.format(AnimalTag)
+        sql_qry = 'SELECT * FROM vaccinedetails WHERE AnimalTag = "{0}";'.format(AnimalTag)
         self.cursor.execute(sql_qry)
         data = self.cursor.fetchall()
 
@@ -454,7 +454,7 @@ class DatabaseByPyMySQL:
         try:
 
             # Adding addVaccineDetails
-            sql1 = 'INSERT INTO vaccinedetails(AnimalTag, VDetails, VDate) VALUES("{0}", "{1}", "{2}");'.format(AnimalTag, Date, details)
+            sql1 = 'INSERT INTO vaccinedetails(AnimalTag, VDetails, VDate) VALUES("{0}", "{1}", "{2}");'.format(AnimalTag, details, Date)
             self.cursor.execute(sql1)
             self.conection.commit()
 
@@ -1236,22 +1236,55 @@ def admin_add_owner():
 
 @app.route('/Admin/Animals/Goat', methods=['POST', 'GET'])
 def goats():
-    return render_template('animals_list.html')
+    db = DatabaseByPyMySQL()
+    data, sts = db.getAnimalByCategory('GOAT')
+
+    return render_template('animals_list.html', data=data, title='Goats')
 
 
 @app.route('/Admin/Animals/Sheep', methods=['POST', 'GET'])
 def Sheeps():
-    return render_template('animals_list.html')
+    db = DatabaseByPyMySQL()
+    data, sts = db.getAnimalByCategory('SHEEP')
+
+    return render_template('animals_list.html', data=data, title='Sheeps')
 
 
 @app.route('/Admin/Animals/Camel', methods=['POST', 'GET'])
 def Camels():
-    return render_template('animals_list.html')
+    db = DatabaseByPyMySQL()
+    data, sts = db.getAnimalByCategory('CAMEL')
+
+    return render_template('animals_list.html', data=data, title='Camels')
 
 
 @app.route('/Admin/Animals/Horse', methods=['POST', 'GET'])
 def Horses():
-    return render_template('animals_list.html')
+    db = DatabaseByPyMySQL()
+    data, sts = db.getAnimalByCategory('HORSE')
+
+    return render_template('animals_list.html', data=data, title='Horses')
+
+def days_between(d1, d2):
+    d1 = datetime.strptime(d1, "%d-%m-%Y")
+    d2 = datetime.strptime(d2, "%d-%m-%Y")
+    print(d1,d2,flush=True)
+    return abs((d2 - d1).days)
+
+@app.route('/Admin/Animals/Details/<id>', methods=['GET'])
+def AnimalsDetails(id):
+    db = DatabaseByPyMySQL()
+    data, sts = db.getAnimalByID(id)
+    print(data, flush=True)
+    vaccine, sts2 = db.getVaccineHistory(data['AnimalTag'])
+    ageDays = days_between(data['AnimalDOB'], datetime.today().strftime('%d-%m-%Y'))
+    ageYears = str(round(ageDays/365,4))
+    age = {
+        'days' : ageDays,
+        'years' : ageYears
+    }
+
+    return render_template('animals_details.html', animal=data, vac=vaccine, age=age)
 
 
 
