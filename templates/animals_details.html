@@ -19,6 +19,8 @@
 {% endblock %}
 
 {% block content %}
+
+
     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 col-lg-12 col-md-12 col-sm-12 col-12">
         <div class="card">
             <div class="card-body">
@@ -27,7 +29,7 @@
                 <p class="card-text">Sex: {{animal['AnimalSex']}}</p>
                 <p class="card-text">Owner: {{animal['AnimalOwner']}}</p>
                 <p class="card-text">Date of Birth: {{animal['AnimalDOB']}} Age: {{age['years']}} years ({{age['days']}} days)</p>
-                <p class="card-text">Father: {{animal['AnimalFather']}} Mother: {{animal['AnimalMother']}}</p>
+                <p class="card-text">Father: <a href="{{animal['AnimalFather']}}">{{animal['AnimalFather']}}</a> Mother: <a href="{{animal['AnimalMother']}}">{{animal['AnimalMother']}}</a></p>
                 <p class="card-text">Weight: {{animal['AnimalWeight']}}</p>
                 <p class="card-text">Status: {{animal['AnimalStatus']}} ({{animal['AnimalStatusDate']}} - {{animal['AnimalStatusCause']}})</p>
                 <p class="text-muted">Last Update: {{animal['UpdatedDate']}}</p>
@@ -44,8 +46,6 @@
 
             <img class="img-fluid" src="/static/UPLOADS/{{animal['AnimalPictureName']}}" alt="{{animal['AnimalTag']}}p">
 
-
-            <br><a href="/Admin/Animals/Update/{{animal['AnimalID']}}" class="btn btn-warning">Edit</a>
             <br><a href="/Admin/Animals/Delete/{{animal['AnimalID']}}" class="btn btn-danger">Delete</a>
         </div>
     </div>

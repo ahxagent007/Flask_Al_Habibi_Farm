@@ -11,7 +11,7 @@
     <div class="page-breadcrumb">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item" aria-current="page"><a href="{{ url_for('admin_add_animal')}}" class="breadcrumb-link">Add / Animal / {{title}}</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="{{ url_for('admin_add_animal')}}" class="breadcrumb-link">More / {{title}}</a></li>
             </ol>
         </nav>
     </div>
@@ -31,30 +31,14 @@
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
-                                                <th>Owner</th>
-                                                <th>Breed</th>
-                                                <th>Sex</th>
-                                                <th>Father</th>
-                                                <th>Mother</th>
-                                                <th>Weight</th>
-                                                <th>Date of birth</th>
-                                                <th>Status</th>
-                                                <th>Details</th>
+                                                <th>Name</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for animal in data %}
+                                            {% for owner in data %}
                                             <tr>
-                                                <td>{{animal['AnimalTag']}}</td>
-                                                <td>{{animal['AnimalOwner']}}</td>
-                                                <td>{{animal['AnimalBreed']}}</td>
-                                                <td>{{animal['AnimalSex']}}</td>
-                                                <td>{{animal['AnimalFather']}}</td>
-                                                <td>{{animal['AnimalMother']}}</td>
-                                                <td>{{animal['AnimalWeight']}}</td>
-                                                <td>{{animal['AnimalDOB']}}</td>
-                                                <td>{{animal['AnimalStatus']}}</td>
-                                                <td><a href="/Admin/Animals/Details/{{animal['AnimalTag']}}" class="btn btn-primary">View</a></td>
+                                                <td>{{owner['OwnerID']}}</td>
+                                                <td>{{owner['OwnerName']}}</td>
                                             </tr>
                                             {% endfor %}
 
@@ -62,15 +46,7 @@
                                         <tfoot>
                                             <tr>
                                                 <th>ID</th>
-                                                <th>Owner</th>
-                                                <th>Breed</th>
-                                                <th>Sex</th>
-                                                <th>Father</th>
-                                                <th>Mother</th>
-                                                <th>Weight</th>
-                                                <th>Date of birth</th>
-                                                <th>Status</th>
-                                                <th>Details</th>
+                                                <th>Name</th>
                                             </tr>
                                         </tfoot>
                                     </table>

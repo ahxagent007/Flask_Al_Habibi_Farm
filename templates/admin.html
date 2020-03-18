@@ -22,4 +22,114 @@
 {% block content %}
 
 
+
+
+    <row class="row">
+
+        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-6 col-lg-6 col-md-12 col-sm-12">
+            <div class="card">
+                <img class="img-fluid" src="/static/img/main_logo.jpeg" alt="Card image cap" >
+                <div class="card-body">
+                    <h3 class="card-title">Al Habibi Farm</h3>
+                    <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed faucibus, libero at finibus fringilla, ante nunc mattis urna, ut condimentum enim mi in eros. Proin pretium volutpat varius. Morbi quis odio ac ex imperdiet malesuada id at nibh. Sed in orci odio. Mauris ac arcu ac lorem commodo vulputate id eleifend nisi. Praesent ut porttitor ante, </p>
+                    <p class="text-muted">Best from Qatar</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-6 col-lg-6 col-md-12 col-sm-12">
+
+            <!-- ============================================================== -->
+            <!-- images  -->
+            <!-- ============================================================== -->
+            <div class="card" id="images">
+                <h5 class="card-header">Animal Count</h5>
+                <div class="card-body">
+                    <row class="row text-center" >
+                        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-6 col-lg-6 col-md-12 col-sm-12">
+                            <img src="/static/img/goat.png" class="rounded-circle mr-3" alt="Responsive image">
+                            <h3>{{data['TotalGoat']}} Goats</h3>
+                        </div>
+                        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-6 col-lg-6 col-md-12 col-sm-12">
+                            <img src="/static/img/sheep.png" class="rounded-circle mr-3" alt="Responsive image">
+                            <h3>{{data['TotalSheep']}} Sheeps</h3>
+                        </div>
+                        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-6 col-lg-6 col-md-12 col-sm-12">
+                            <img src="/static/img/horse.png" class="rounded-circle mr-3" alt="Responsive image">
+                            <h3>{{data['TotalHorse']}} Horses</h3>
+                        </div>
+                        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-6 col-lg-6 col-md-12 col-sm-12">
+                            <img src="/static/img/camel.png" class="rounded-circle mr-3" alt="Responsive image">
+                            <h3>{{data['TotalCamel']}} Camels</h3>
+                        </div>
+                    </row>
+                </div>
+            </div>
+            <!-- ============================================================== -->
+            <!-- end images -->
+            <!-- ============================================================== -->
+
+
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- basic tabs  -->
+        <!-- ============================================================== -->
+
+        <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12 col-lg-6 col-md-6 col-sm-12 col-12">
+            <div class="card">
+                <div class="card-header pills-regular">
+                    <ul class="nav nav-pills card-header-pills" id="myTab2" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="card-pills-1" data-toggle="tab" href="#card-pill-1" role="tab" aria-controls="card-1" aria-selected="true">Total</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="card-pills-2" data-toggle="tab" href="#card-pill-2" role="tab" aria-controls="card-2" aria-selected="false">Missing</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="card-pills-3" data-toggle="tab" href="#card-pill-3" role="tab" aria-controls="card-3" aria-selected="false">Died</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="card-pills-4" data-toggle="tab" href="#card-pill-4" role="tab" aria-controls="card-3" aria-selected="false">Slaughter</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="myTabContent2">
+                        <div class="tab-pane fade show active" id="card-pill-1" role="tabpanel" aria-labelledby="card-tab-1">
+                            <h4>Goats Alive : {{data['TotalGoat']}}</h4>
+                            <h4>Sheep Alive : {{data['TotalSheep']}}</h4>
+                            <h4>Horse Alive : {{data['TotalHorse']}}</h4>
+                            <h4>Camel Alive : {{data['TotalCamel']}}</h4>
+
+
+                        </div>
+                        <div class="tab-pane fade" id="card-pill-2" role="tabpanel" aria-labelledby="card-tab-2">
+                            <h4>Goats Missing : {{data['MissingGoat']}}</h4>
+                            <h4>Sheep Missing : {{data['MissingSheep']}}</h4>
+                            <h4>Horse Missing : {{data['MissingHorse']}}</h4>
+                            <h4>Camel Missing : {{data['MissingCamel']}}</h4>
+                        </div>
+                        <div class="tab-pane fade" id="card-pill-3" role="tabpanel" aria-labelledby="card-tab-3">
+                            <h4>Goats Died : {{data['DiedGoat']}}</h4>
+                            <h4>Sheep Died : {{data['DiedSheep']}}</h4>
+                            <h4>Horse Died : {{data['DiedHorse']}}</h4>
+                            <h4>Camel Died : {{data['DiedCamel']}}</h4>
+                        </div>
+                         <div class="tab-pane fade" id="card-pill-4" role="tabpanel" aria-labelledby="card-tab-4">
+                            <h4>Goats Slaughter : {{data['SlaughterGoat']}}</h4>
+                            <h4>Sheep Slaughter : {{data['SlaughterSheep']}}</h4>
+                            <h4>Horse Slaughter : {{data['SlaughterHorse']}}</h4>
+                            <h4>Camel Slaughter : {{data['SlaughterCamel']}}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ============================================================== -->
+        <!-- end basic tabs  -->
+        <!-- ============================================================== -->
+
+    </row>
+
 {% endblock %}
