@@ -212,7 +212,7 @@ class DatabaseByPyMySQL:
     def Login(self, Email, Pass):
         print(Email, Pass, flush=True)
         if self.isEmailExist(Email):
-            user = self.getUserByEmail(Email)
+            user, sts = self.getUserByEmail(Email)
             if user['UserPass'] == Pass:
                 return user['Type'], True
             else:
@@ -1162,189 +1162,241 @@ def uploadFileAnimalPicture():
 
 @app.route('/')
 def admin():
-    db = DatabaseByPyMySQL()
-    data = db.getCommonData()
 
-    return render_template('admin.html', data=data[0])
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        db = DatabaseByPyMySQL()
+        data = db.getCommonData()
+
+        return render_template('admin.html', data=data[0])
+
+    else:
+        return redirect(url_for('login'))
+
+
 
 
 @app.route('/Admin/Add/Animal', methods=['POST', 'GET'])
 def admin_add_animal():
 
-    db = DatabaseByPyMySQL()
-    owner, bool = db.getAllOwner()
-    data = {
-        'cat': {'GOAT', 'SHEEP', 'HORSE', 'CAMEL'},
-        'owner' : owner
-    }
-    if request.method == 'POST':
-        print('POST', flush=True)
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        db = DatabaseByPyMySQL()
+        owner, bool = db.getAllOwner()
+        data = {
+            'cat': {'GOAT', 'SHEEP', 'HORSE', 'CAMEL'},
+            'owner': owner
+        }
+        if request.method == 'POST':
+            print('POST', flush=True)
 
-        # check if the post request has the file part
-        if 'AnimalPic' not in request.files:
-            print('No file part', flush=True)
-            return render_template('admin_add_animal.html', msg='False', data=data)
-        file = request.files['AnimalPic']
-        # if user does not select file, browser also
-        # submit an empty part without filename
-        if file.filename == '':
-            print('No selected file',flush=True)
-            return render_template('admin_add_animal.html', msg='False', data=data)
-
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filename = str(current_milli_time()) + filename[-4:]
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-
-            print(filename, flush=True)
-
-
-
-            try:
-                father = request.form['AnimalFather']
-            except:
-                father = 'NULL'
-                print('Error = ', str(sys.exc_info()[0]), flush=True)
-
-            try:
-                mother = request.form['AnimalMother']
-            except:
-                mother = 'NULL'
-                print('Error = ', str(sys.exc_info()[0]), flush=True)
-
-            try:
-                category = request.form['AnimalCategory']
-                breed = request.form['AnimalBreed']
-                sex = request.form['AnimalSex']
-                owner = request.form['AnimalOwner']
-                dob = request.form['AnimalDOB']
-                dob = dob[8:10]+'-'+dob[5:7]+'-'+dob[0:4]             #0123 4 56 7 89
-                weight = request.form['AnimalWeight']
-            except:
+            # check if the post request has the file part
+            if 'AnimalPic' not in request.files:
+                print('No file part', flush=True)
                 return render_template('admin_add_animal.html', msg='False', data=data)
-                print('Error = ', str(sys.exc_info()[0]), flush=True)
+            file = request.files['AnimalPic']
+            # if user does not select file, browser also
+            # submit an empty part without filename
+            if file.filename == '':
+                print('No selected file', flush=True)
+                return render_template('admin_add_animal.html', msg='False', data=data)
 
-            print('DOB : '+str(dob), flush=True)
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                filename = str(current_milli_time()) + filename[-4:]
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            db = DatabaseByPyMySQL()
-            status = db.addAnimal(category, breed, sex, owner, dob, father, mother, weight, filename)
+                print(filename, flush=True)
 
-            print(str(status), flush=True)
-            return render_template('admin_add_animal.html', msg=str(status), data=data)
+                try:
+                    father = request.form['AnimalFather']
+                except:
+                    father = 'NULL'
+                    print('Error = ', str(sys.exc_info()[0]), flush=True)
 
-    return render_template('admin_add_animal.html', data=data)
+                try:
+                    mother = request.form['AnimalMother']
+                except:
+                    mother = 'NULL'
+                    print('Error = ', str(sys.exc_info()[0]), flush=True)
+
+                try:
+                    category = request.form['AnimalCategory']
+                    breed = request.form['AnimalBreed']
+                    sex = request.form['AnimalSex']
+                    owner = request.form['AnimalOwner']
+                    dob = request.form['AnimalDOB']
+                    dob = dob[8:10] + '-' + dob[5:7] + '-' + dob[0:4]  # 0123 4 56 7 89
+                    weight = request.form['AnimalWeight']
+                except:
+                    return render_template('admin_add_animal.html', msg='False', data=data)
+                    print('Error = ', str(sys.exc_info()[0]), flush=True)
+
+                print('DOB : ' + str(dob), flush=True)
+
+                db = DatabaseByPyMySQL()
+                status = db.addAnimal(category, breed, sex, owner, dob, father, mother, weight, filename)
+
+                print(str(status), flush=True)
+                return render_template('admin_add_animal.html', msg=str(status), data=data)
+
+        return render_template('admin_add_animal.html', data=data)
+
+    else:
+        return redirect(url_for('login'))
+
+
 
 
 @app.route('/Admin/Add/GetDetailsSelect', methods=['POST'])
 def get_all_options():
-    cat = request.form.get('cat')
 
-    db = DatabaseByPyMySQL()
-    data, bool1 = db.getSubCategory(cat)
-    animalMale, bool2 = db.getAnimalByCategoryAndGender(cat, 'Male')
-    animalFemale, bool3 = db.getAnimalByCategoryAndGender(cat, 'Female')
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        cat = request.form.get('cat')
 
-    if not bool2:
-        animalMale = []
-    if not bool3:
-        animalFemale = []
+        db = DatabaseByPyMySQL()
+        data, bool1 = db.getSubCategory(cat)
+        animalMale, bool2 = db.getAnimalByCategoryAndGender(cat, 'Male')
+        animalFemale, bool3 = db.getAnimalByCategoryAndGender(cat, 'Female')
 
-    allData = {
-        'breed' : data,
-        'male' : animalMale,
-        'female' : animalFemale
-    }
+        if not bool2:
+            animalMale = []
+        if not bool3:
+            animalFemale = []
 
-    if bool:
-        print('FOUND DATA =  ' + str(len(allData)), flush=True)
-        return jsonify(allData)
+        allData = {
+            'breed': data,
+            'male': animalMale,
+            'female': animalFemale
+        }
+
+        if bool:
+            print('FOUND DATA =  ' + str(len(allData)), flush=True)
+            return jsonify(allData)
+        else:
+            print('NOT FOUND ANY DATA!! ', flush=True)
+            return jsonify("")
+
     else:
-        print('NOT FOUND ANY DATA!! ', flush=True)
-        return jsonify("")
+        return redirect(url_for('login'))
+
 
 
 @app.route('/Admin/Add/Employee', methods=['POST', 'GET'])
 def admin_add_employee():
 
-    if request.method == 'POST':
-        try:
-            EmployeeName = request.form['EmployeeName']
-            EmployeePhoneNumber = request.form['EmployeePhoneNumber']
-            EmployeeEmail = request.form['EmployeeEmail']
-            EmployeeAddress = request.form['EmployeeAddress']
-            EmployeePass = request.form['EmployeePass']
-            #EmployeePass = hashlib.md5(EmployeePass.decode("utf").hexdigest())
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        if request.method == 'POST':
+            try:
+                EmployeeName = request.form['EmployeeName']
+                EmployeePhoneNumber = request.form['EmployeePhoneNumber']
+                EmployeeEmail = request.form['EmployeeEmail']
+                EmployeeAddress = request.form['EmployeeAddress']
+                EmployeePass = request.form['EmployeePass']
+                # EmployeePass = hashlib.md5(EmployeePass.decode("utf").hexdigest())
 
-            print(EmployeeName, EmployeePhoneNumber,EmployeeEmail, EmployeeAddress, EmployeePass)
+                print(EmployeeName, EmployeePhoneNumber, EmployeeEmail, EmployeeAddress, EmployeePass)
 
-        except:
-            print('Error = ', str(sys.exc_info()[0]), flush=True)
-            return render_template('admin_add_employee.html', msg='failed')
-
-
-        db = DatabaseByPyMySQL()
-        sts = db.isEmailExist(EmployeeEmail)
-
-        if not sts:
-            sts1 = db.addEmployee(EmployeeName, EmployeeEmail, EmployeePhoneNumber, EmployeeAddress, EmployeePass)
-            if sts1:
-                return render_template('admin_add_employee.html', msg='success')
-            else:
+            except:
+                print('Error = ', str(sys.exc_info()[0]), flush=True)
                 return render_template('admin_add_employee.html', msg='failed')
-        else:
-            return render_template('admin_add_employee.html', msg='user_exist')
 
-    return render_template('admin_add_employee.html')
+            db = DatabaseByPyMySQL()
+            sts = db.isEmailExist(EmployeeEmail)
+
+            if not sts:
+                sts1 = db.addEmployee(EmployeeName, EmployeeEmail, EmployeePhoneNumber, EmployeeAddress, EmployeePass)
+                if sts1:
+                    return render_template('admin_add_employee.html', msg='success')
+                else:
+                    return render_template('admin_add_employee.html', msg='failed')
+            else:
+                return render_template('admin_add_employee.html', msg='user_exist')
+
+        return render_template('admin_add_employee.html')
+
+    else:
+        return redirect(url_for('login'))
+
+
 
 @app.route('/Admin/Add/Owner', methods=['POST', 'GET'])
 def admin_add_owner():
 
-    if request.method == 'POST':
-        try:
-            OwnerName = request.form['OwnerName']
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        if request.method == 'POST':
+            try:
+                OwnerName = request.form['OwnerName']
 
-            db = DatabaseByPyMySQL()
-            sts = db.addOwner(OwnerName)
+                db = DatabaseByPyMySQL()
+                sts = db.addOwner(OwnerName)
 
-            return render_template('admin_add_owner.html', msg=str(sts))
+                return render_template('admin_add_owner.html', msg=str(sts))
 
-        except:
-            return render_template('admin_add_owner.html', msg='False')
-            print('Error = ', str(sys.exc_info()[0]), flush=True)
+            except:
+                return render_template('admin_add_owner.html', msg='False')
+                print('Error = ', str(sys.exc_info()[0]), flush=True)
 
-    return render_template('admin_add_owner.html')
+        return render_template('admin_add_owner.html')
+
+    else:
+        return redirect(url_for('login'))
+
+
 
 
 @app.route('/Admin/Animals/Goat', methods=['GET'])
 def goats():
-    db = DatabaseByPyMySQL()
-    data, sts = db.getAnimalByCategory('GOAT')
 
-    return render_template('animals_list.html', data=data, title='Goats')
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        db = DatabaseByPyMySQL()
+        data, sts = db.getAnimalByCategory('GOAT')
+
+        return render_template('animals_list.html', data=data, title='Goats')
+
+    else:
+        return redirect(url_for('login'))
+
 
 
 @app.route('/Admin/Animals/Sheep', methods=['GET'])
 def Sheeps():
-    db = DatabaseByPyMySQL()
-    data, sts = db.getAnimalByCategory('SHEEP')
 
-    return render_template('animals_list.html', data=data, title='Sheeps')
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        db = DatabaseByPyMySQL()
+        data, sts = db.getAnimalByCategory('SHEEP')
+
+        return render_template('animals_list.html', data=data, title='Sheeps')
+
+    else:
+        return redirect(url_for('login'))
+
 
 
 @app.route('/Admin/Animals/Camel', methods=[ 'GET'])
 def Camels():
-    db = DatabaseByPyMySQL()
-    data, sts = db.getAnimalByCategory('CAMEL')
 
-    return render_template('animals_list.html', data=data, title='Camels')
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        db = DatabaseByPyMySQL()
+        data, sts = db.getAnimalByCategory('CAMEL')
+
+        return render_template('animals_list.html', data=data, title='Camels')
+
+    else:
+        return redirect(url_for('login'))
+
 
 
 @app.route('/Admin/Animals/Horse', methods=['GET'])
 def Horses():
-    db = DatabaseByPyMySQL()
-    data, sts = db.getAnimalByCategory('HORSE')
 
-    return render_template('animals_list.html', data=data, title='Horses')
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        db = DatabaseByPyMySQL()
+        data, sts = db.getAnimalByCategory('HORSE')
+
+        return render_template('animals_list.html', data=data, title='Horses')
+
+    else:
+        return redirect(url_for('login'))
+
 
 def days_between(d1, d2):
     d1 = datetime.strptime(d1, "%d-%m-%Y")
@@ -1354,48 +1406,78 @@ def days_between(d1, d2):
 
 @app.route('/Admin/Animals/Details/<tag>', methods=['GET'])
 def AnimalsDetails(tag):
-    db = DatabaseByPyMySQL()
-    data, sts = db.getAnimalByTag(tag)
-    print(data, flush=True)
-    vaccine, sts2 = db.getVaccineHistory(data['AnimalTag'])
-    ageDays = days_between(data['AnimalDOB'], datetime.today().strftime('%d-%m-%Y'))
-    ageYears = str(round(ageDays/365,4))
-    age = {
-        'days' : ageDays,
-        'years' : ageYears
-    }
 
-    return render_template('animals_details.html', animal=data, vac=vaccine, age=age)
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        db = DatabaseByPyMySQL()
+        data, sts = db.getAnimalByTag(tag)
+        print(data, flush=True)
+        vaccine, sts2 = db.getVaccineHistory(data['AnimalTag'])
+        ageDays = days_between(data['AnimalDOB'], datetime.today().strftime('%d-%m-%Y'))
+        ageYears = str(round(ageDays / 365, 4))
+        age = {
+            'days': ageDays,
+            'years': ageYears
+        }
+
+        return render_template('animals_details.html', animal=data, vac=vaccine, age=age)
+
+    else:
+        return redirect(url_for('login'))
+
 
 
 @app.route('/Admin/More/Employee', methods=['GET'])
 def all_employee():
-    db = DatabaseByPyMySQL()
-    data, sts = db.getAllEmployee()
 
-    return render_template('employee_list.html', data=data, title='Employee')
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        db = DatabaseByPyMySQL()
+        data, sts = db.getAllEmployee()
+
+        return render_template('employee_list.html', data=data, title='Employee')
+
+    else:
+        return redirect(url_for('login'))
+
 
 @app.route('/Admin/More/Owner', methods=['GET'])
 def all_owner():
-    db = DatabaseByPyMySQL()
-    data, sts = db.getAllOwner()
 
-    return render_template('owner_list.html', data=data, title='Owner')
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        db = DatabaseByPyMySQL()
+        data, sts = db.getAllOwner()
+
+        return render_template('owner_list.html', data=data, title='Owner')
+
+    else:
+        return redirect(url_for('login'))
+
 
 @app.route('/Admin/Animals/Delete/<id>')
 def del_animal(id):
-    db = DatabaseByPyMySQL()
-    stats = db.deleteAnimalByID(id)
 
-    return redirect(url_for('admin'))
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        db = DatabaseByPyMySQL()
+        stats = db.deleteAnimalByID(id)
+
+        return redirect(url_for('admin'))
+
+    else:
+        return redirect(url_for('login'))
+
 
 
 @app.route('/Admin/Delete/Emp/<id>')
 def del_employee(id):
-    db = DatabaseByPyMySQL()
-    stats = db.deleteEmployeeByID(id)
 
-    return redirect(url_for('all_employee'))
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        db = DatabaseByPyMySQL()
+        stats = db.deleteEmployeeByID(id)
+
+        return redirect(url_for('all_employee'))
+
+    else:
+        return redirect(url_for('login'))
+
 
 
 
@@ -1404,74 +1486,42 @@ def del_employee(id):
 def login():
 
     if session.get('id') is not None:
-        if session['type'] == 'EMP':
-            print('EMP FOUND !!', flush=True)
-            return redirect(url_for('sales_dashboard'))
-
-        elif session['type'] == 'MNG':
-            print('MNG FOUND !!', flush=True)
-            return redirect(url_for('manager_dashboard'))
-
-        elif session['type'] == 'CUS':
-            print('CUS FOUND !!', flush=True)
-            return redirect(url_for('customer_dashboard'))
-
-        else:
-            abort(401)
+        return redirect(url_for('admin'))
     else:
         return render_template('login.html')
 
 @app.route('/Login', methods=['POST'])
 def login_request():
     if request.method == 'POST':
-        EmailOrPhone = request.form['emailOrPhone']
+        Email = request.form['emailOrPhone']
         Password = request.form['pass']
 
-        print(EmailOrPhone+' '+Password, flush=True)
+        print(Email+' '+Password, flush=True)
 
         db = DatabaseByPyMySQL()
 
-        status, user_id = db.Login(email=EmailOrPhone, phone=EmailOrPhone, password=Password)
+        user_type, status = db.Login(Email, Password)
 
-        if(status):
-            user = db.getUserByID(user_id)
+        if status and user_type == 'ADMIN':
+            user, sts = db.getUserByEmail(Email)
 
-            session['id'] = user[0]['user_id']
-            session['phone'] = user[0]['phone_no']
-            session['mail'] = user[0]['email']
-            session['type'] = user[0]['type']
-            session['address'] = user[0]['address']
-            session['name'] = user[0]['name']
+            session['UserID'] = user['UserID']
+            session['UserName'] = user['UserName']
+            session['UserEmail'] = user['UserEmail']
+            session['Type'] = user['Type']
 
-            if session['type'] == 'EMP':
-                print('EMP FOUND !!', flush=True)
-                return redirect(url_for('sales_dashboard'))
-
-            elif session['type'] == 'MNG':
-                print('MNG FOUND !!', flush=True)
-                return redirect(url_for('manager_dashboard'))
-
-            elif session['type'] == 'CUS':
-                print('CUS FOUND !!', flush=True)
-                return redirect(url_for('customer_dashboard'))
-
-            else:
-                abort(401)
-
+            return redirect(url_for('admin'))
         else:
-            print(status, flush=True)
-
+            return render_template('login.html')
 
     return render_template('login.html')
 
 @app.route('/Logout')
 def logout():
-    session.pop('id', None)
-    session.pop('phone', None)
-    session.pop('mail', None)
-    session.pop('type', None)
-    session.pop('address', None)
-    session.pop('name', None)
+    session.pop('UserID', None)
+    session.pop('UserName', None)
+    session.pop('UserEmail', None)
+    session.pop('Type', None)
 
     return redirect(url_for('login'))
 
