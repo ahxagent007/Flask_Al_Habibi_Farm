@@ -1,9 +1,8 @@
-import hashlib
 import os
 import sys
 import time
 
-from flask import Flask, render_template, request, flash, url_for, send_from_directory, jsonify, session, abort, redirect
+from flask import Flask, render_template, request, flash, url_for, jsonify, session, redirect
 import pymysql
 from datetime import datetime
 from werkzeug.utils import secure_filename
@@ -70,12 +69,12 @@ class DatabaseByPyMySQL:
         data = self.cursor.fetchall()
 
         print('getAnimalLastID : ', str(data), flush=True)
-        print('getAnimalLastID : ', str(data[0]['AnimalID']), flush=True)
 
         if len(data)>0:
+            print('getAnimalLastID : ', str(data[0]['AnimalID']), flush=True)
             return data[0]['AnimalID'], True
         else:
-            return data, False
+            return 0, False
 
     def getAnimalByTag(self, tag):
         sql_qry = 'SELECT * FROM animal WHERE AnimalTag = "{0}";'.format(tag)
@@ -126,7 +125,7 @@ class DatabaseByPyMySQL:
 
                 elif CAT == 'SHEEP':
                     if TYPE == 'ADD':
-                        sql = 'UPDATE commondata SET TotalSheep = {0} WHERE CdID = {1};'.format(data[0]['TotalGoat'] + 1,
+                        sql = 'UPDATE commondata SET TotalSheep = {0} WHERE CdID = {1};'.format(data[0]['TotalSheep'] + 1,
                                                                                             data[0]['CdID'])
                     elif TYPE == 'MISS':
                         sql = 'UPDATE commondata SET TotalSheep = {0}, MissingSheep = {1} WHERE CdID = {2};'.format(
@@ -149,7 +148,7 @@ class DatabaseByPyMySQL:
                             sql = 'UPDATE commondata SET DiedSheep = {0} WHERE CdID = {1};'.format(data[0]['DiedSheep'] - 1, data[0]['CdID'])
                 elif CAT == 'CAMEL':
                     if TYPE == 'ADD':
-                        sql = 'UPDATE commondata SET TotalCamel = {0} WHERE CdID = {1};'.format(data[0]['TotalGoat'] + 1,
+                        sql = 'UPDATE commondata SET TotalCamel = {0} WHERE CdID = {1};'.format(data[0]['TotalCamel'] + 1,
                                                                                             data[0]['CdID'])
                     elif TYPE == 'MISS':
                         sql = 'UPDATE commondata SET TotalCamel = {0}, MissingCamel = {1} WHERE CdID = {2};'.format(
@@ -173,7 +172,7 @@ class DatabaseByPyMySQL:
 
                 elif CAT == 'HORSE':
                     if TYPE == 'ADD':
-                        sql = 'UPDATE commondata SET TotalHorse = {0} WHERE CdID = {1};'.format(data[0]['TotalGoat'] + 1,
+                        sql = 'UPDATE commondata SET TotalHorse = {0} WHERE CdID = {1};'.format(data[0]['TotalHorse'] + 1,
                                                                                             data[0]['CdID'])
                     elif TYPE == 'MISS':
                         sql = 'UPDATE commondata SET TotalHorse = {0}, MissingHorse = {1} WHERE CdID = {2};'.format(
@@ -384,8 +383,8 @@ class DatabaseByPyMySQL:
 
             # Adding
             sql1 = 'INSERT INTO animal(AnimalID, AnimalTag, AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalStatus, AddedDate, UpdatedDate, AnimalPictureName)' \
-                   ' VALUES({0},"{1}","{2}","{3}","{4}","{5}","{6}","{7}","{8}",{9},"ALIVE","{10}","{11}","{12}");'.format(animal_id, animal_tag, AnimalCategory, AnimalBreed, AnimalSex,
-                                                                                                                    AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, addedDate, addedDate,AnimalPictureName)
+                   ' VALUES({0},"{1}","{2}","{3}","{4}","{5}","{6}","{7}","{8}",{9},"ALIVE","{10}","{10}","{11}");'.format(animal_id, animal_tag, AnimalCategory, AnimalBreed, AnimalSex,
+                                                                                                                    AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, addedDate, AnimalPictureName)
             print(sql1, flush=True)
             self.cursor.execute(sql1)
             self.conection.commit()
@@ -1173,8 +1172,6 @@ def admin():
         return redirect(url_for('login'))
 
 
-
-
 @app.route('/Admin/Add/Animal', methods=['POST', 'GET'])
 def admin_add_animal():
 
@@ -1244,8 +1241,6 @@ def admin_add_animal():
         return redirect(url_for('login'))
 
 
-
-
 @app.route('/Admin/Add/GetDetailsSelect', methods=['POST'])
 def get_all_options():
 
@@ -1277,7 +1272,6 @@ def get_all_options():
 
     else:
         return redirect(url_for('login'))
-
 
 
 @app.route('/Admin/Add/Employee', methods=['POST', 'GET'])
@@ -1317,7 +1311,6 @@ def admin_add_employee():
         return redirect(url_for('login'))
 
 
-
 @app.route('/Admin/Add/Owner', methods=['POST', 'GET'])
 def admin_add_owner():
 
@@ -1341,8 +1334,6 @@ def admin_add_owner():
         return redirect(url_for('login'))
 
 
-
-
 @app.route('/Admin/Animals/Goat', methods=['GET'])
 def goats():
 
@@ -1354,7 +1345,6 @@ def goats():
 
     else:
         return redirect(url_for('login'))
-
 
 
 @app.route('/Admin/Animals/Sheep', methods=['GET'])
@@ -1370,7 +1360,6 @@ def Sheeps():
         return redirect(url_for('login'))
 
 
-
 @app.route('/Admin/Animals/Camel', methods=[ 'GET'])
 def Camels():
 
@@ -1382,7 +1371,6 @@ def Camels():
 
     else:
         return redirect(url_for('login'))
-
 
 
 @app.route('/Admin/Animals/Horse', methods=['GET'])
@@ -1425,7 +1413,6 @@ def AnimalsDetails(tag):
         return redirect(url_for('login'))
 
 
-
 @app.route('/Admin/More/Employee', methods=['GET'])
 def all_employee():
 
@@ -1465,7 +1452,6 @@ def del_animal(id):
         return redirect(url_for('login'))
 
 
-
 @app.route('/Admin/Delete/Emp/<id>')
 def del_employee(id):
 
@@ -1477,9 +1463,6 @@ def del_employee(id):
 
     else:
         return redirect(url_for('login'))
-
-
-
 
 
 @app.route('/Login')

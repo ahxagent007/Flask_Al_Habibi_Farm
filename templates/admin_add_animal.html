@@ -71,7 +71,7 @@
                             <select id="AnimalSex" name="AnimalSex" class="form-control">
 
                               <option value="Male">Male</option>
-                              <option value="Male">Female</option>
+                              <option value="Female">Female</option>
 
                             </select>
                         </div>
@@ -160,7 +160,7 @@
                         tempBreed+
                     '</select></div>');
                     
-                    
+                    tempMale = tempMale.concat('<option value=""></option>');
                     male.forEach((m) => {
                             console.log(m.AnimalTag);
                             tempMale = tempMale.concat('<option value="'+m.AnimalTag+'">'+m.AnimalTag+'</option>');            
@@ -172,7 +172,7 @@
                         tempMale+
                     '</select></div>');
                     
-                    
+                    tempFemale = tempFemale.concat('<option value=""></option>');
                     female.forEach((f) => {
                             console.log(f.AnimalTag);
                             tempFemale = tempFemale.concat('<option value="'+f.AnimalTag+'">'+f.AnimalTag+'</option>');            
