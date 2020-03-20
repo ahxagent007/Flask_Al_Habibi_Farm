@@ -11,7 +11,7 @@
     <div class="page-breadcrumb">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item" aria-current="page"><a href="{{ url_for('admin_add_owner')}}" class="breadcrumb-link">Animal / Died</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="{{ url_for('admin_add_owner')}}" class="breadcrumb-link">Animal / Missing</a></li>
             </ol>
         </nav>
     </div>
@@ -20,22 +20,17 @@
 
 {% block content %}
 
-
     <row>
         <div class="col-xl-12 col-lg-6 col-md-12 col-sm-12 col-12">
             <div class="card">
-                <h5 class="card-header">Died Details for {{animalTag}}</h5>
+                <h5 class="card-header">Missing Report of {{animalTag}}</h5>
                 <div class="card-body">
-                    <form action="{{url_for('animal_died',tag=animalTag)}}" id="AddEmployeeForm" data-parsley-validate="" method="post">
+                    <form action="{{url_for('animal_missing',tag=animalTag)}}" id="AddEmployeeForm" data-parsley-validate="" method="post">
+
 
                         <div class="form-group">
-                            <label for="DiedDetails">Died Cause:</label>
-                            <input id="DiedDetails" type="text" name="DiedDetails" data-parsley-trigger="change" required="" placeholder="Enter Died Cause" autocomplete="off" class="form-control">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="DiedDate">Died Date:</label><br>
-                            <input type="date" id="DiedDate" name="DiedDate">
+                            <label for="MissingDate">Slaughter Date:</label><br>
+                            <input type="date" id="MissingDate" name="MissingDate">
                         </div>
 
                         <div class="row">

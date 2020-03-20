@@ -45,21 +45,28 @@
             <br>
 
             <div class="row text-center">
+                {% if animal['AnimalStatus'] == 'ALIVE' %}
                 <div class="col-3">
                     <a href="/Admin/Animals/Vaccine/{{animal['AnimalTag']}}" class="btn btn-success">Vaccine</a>
                 </div>
-
+                {% endif %}
+                {% if animal['AnimalStatus'] == 'ALIVE' %}
                 <div class="col-3">
                     <a href="/Admin/Animals/Slaughter/{{animal['AnimalTag']}}" class="btn btn-warning">Slaughter</a>
                 </div>
+                {% endif %}
 
+                {% if animal['AnimalStatus'] == 'ALIVE' %}
                 <div class="col-3">
-                    <a href="/Admin/Animals/Missing/{{animal['AnimalID']}}" class="btn btn-danger">Missing</a>
+                    <a href="/Admin/Animals/Missing/{{animal['AnimalTag']}}" class="btn btn-danger">Missing</a>
                 </div>
+                {% endif %}
 
+                {% if animal['AnimalStatus'] == 'ALIVE'  or animal['AnimalStatus'] == 'MISSING' %}
                 <div class="col-3">
-                    <a href="/Admin/Animals/Died/{{animal['AnimalID']}}" class="btn btn-danger">Died</a>
+                    <a href="/Admin/Animals/Died/{{animal['AnimalTag']}}" class="btn btn-danger">Died</a>
                 </div>
+                {% endif %}
 
             </div>
             <br>

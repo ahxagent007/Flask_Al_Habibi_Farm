@@ -441,7 +441,7 @@ class DatabaseByPyMySQL:
             sts = 'MISSING'
             cause = 'NULL'
             # Adding Dish
-            sql1 = 'UPDATE Animal SET AnimalStatus = "{0}",  AnimalStatusDate = "{1}", AnimalStatusCause = "{2}", UpdateDate = "{3}" WHERE AnimalTag = "{4}";'.format(
+            sql1 = 'UPDATE Animal SET AnimalStatus = "{0}",  AnimalStatusDate = "{1}", AnimalStatusCause = "{2}", UpdatedDate = "{3}" WHERE AnimalTag = "{4}";'.format(
                 sts, Date, cause, dateNow, AnimalTag)
             self.cursor.execute(sql1)
             self.conection.commit()
@@ -886,14 +886,14 @@ def AddAnimal():
         AnimalFather = contentJSON["AnimalFather"]
         AnimalMother = contentJSON["AnimalMother"]
         AnimalWeight = contentJSON["AnimalWeight"]
-        AnimalPictureBlob = contentJSON["AnimalPictureBlob"]
+        AnimalPictureName = contentJSON["AnimalPictureName"]
 
     except:
         print('Error = ', str(sys.exc_info()[0]), flush=True)
-        return jsonify({"status": 0, "data": "NULL"}), 400
+        return jsonify({"status": 0}), 400
 
     DB = DatabaseByPyMySQL()
-    status = DB.addAnimal(AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalPictureBlob)
+    status = DB.addAnimal(AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalPictureName)
 
     if status:
         return jsonify({"status": 1}), 200
@@ -980,7 +980,7 @@ def AddVaccineDetails():
         return jsonify({"status": 0}), 200
 
 # 18
-@app.route('/API/SearchAnimal', methods=['POST'])
+@app.route('/API/AddEmployee', methods=['POST'])
 def AddEmployee():
     contentJSON = request.json
     try:
@@ -992,7 +992,7 @@ def AddEmployee():
 
     except:
         print('Error = ', str(sys.exc_info()[0]), flush=True)
-        return jsonify({"status": 0, "data": "NULL"}), 400
+        return jsonify({"status": 0}), 400
 
     DB = DatabaseByPyMySQL()
     status = DB.addEmployee(UserName, UserEmail, UserPhone, UserAddress, UserPass)
@@ -1480,6 +1480,7 @@ def animal_vaccine(tag):
                 db = DatabaseByPyMySQL()
                 sts = db.addVaccineDetails(tag,VaccineDate, VaccineDetails)
 
+
                 return redirect(url_for('AnimalsDetails',tag=tag))
 
             except:
@@ -1515,9 +1516,83 @@ def animal_slaughter(tag):
     else:
         return redirect(url_for('login'))
 
+@app.route('/Admin/Animals/Died/<tag>', methods=['GET', 'POST'])
+def animal_died(tag):
+
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        if request.method == 'POST':
+            try:
+                DiedDetails = request.form['DiedDetails']
+                DiedDate = request.form['DiedDate']
+                DiedDate = DiedDate[8:10] + '-' + DiedDate[5:7] + '-' + DiedDate[0:4]  # 0123 4 56 7 89
+
+                db = DatabaseByPyMySQL()
+                sts = db.addDiedAnimal(tag,DiedDate, DiedDetails)
+
+
+                return redirect(url_for('AnimalsDetails',tag=tag))
+
+            except:
+                return redirect(url_for('AnimalsDetails',tag=tag))
+                print('Error on animal_died = ', str(sys.exc_info()[0]), flush=True)
+
+
+        return render_template('animal_died.html', animalTag=tag)
+
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/Admin/Animals/Missing/<tag>', methods=['POST', 'GET'])
+def animal_missing(tag):
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        if request.method == 'POST':
+            try:
+                MissingDate = request.form['MissingDate']
+                MissingDate = MissingDate[8:10] + '-' + MissingDate[5:7] + '-' + MissingDate[0:4]  # 0123 4 56 7 89
+
+                db = DatabaseByPyMySQL()
+                sts = db.addMissinAnimal(tag, MissingDate)
+
+                return redirect(url_for('AnimalsDetails', tag=tag))
+
+            except:
+                return redirect(url_for('AnimalsDetails', tag=tag))
+                print('Error on animal_slaughter = ', str(sys.exc_info()[0]), flush=True)
+
+
+        return render_template('animal_missing.html', animalTag=tag)
+
+    else:
+        return redirect(url_for('login'))
 
 
 
+
+@app.route('/test/<dob>')
+def test(dob):
+    dob = dob.split('-')
+    print(dob[0], flush=True)
+    print(dob[1], flush=True)
+    print(dob[2], flush=True)
+    dobbb = ''
+    if int(dob[0])<10:
+        dobbb+='0'+str(dob[0])
+    else:
+        dobbb += str(dob[0])
+
+    dobbb += '-'
+
+    if int(dob[1]) < 10:
+        dobbb += '0' + str(dob[1])
+    else:
+        dobbb += str(dob[1])
+
+    dobbb += '-'
+
+    dobbb += dob[2]
+
+
+    return dobbb
 
 @app.route('/Login')
 def login():
