@@ -1465,6 +1465,60 @@ def del_employee(id):
         return redirect(url_for('login'))
 
 
+
+
+@app.route('/Admin/Animals/Vaccine/<tag>', methods=['GET', 'POST'])
+def animal_vaccine(tag):
+
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        if request.method == 'POST':
+            try:
+                VaccineDetails = request.form['VaccineDetails']
+                VaccineDate = request.form['VaccineDate']
+                VaccineDate = VaccineDate[8:10] + '-' + VaccineDate[5:7] + '-' + VaccineDate[0:4]  # 0123 4 56 7 89
+
+                db = DatabaseByPyMySQL()
+                sts = db.addVaccineDetails(tag,VaccineDate, VaccineDetails)
+
+                return redirect(url_for('AnimalsDetails',tag=tag))
+
+            except:
+                return redirect(url_for('AnimalsDetails',tag=tag))
+                print('Error on animal_vaccine = ', str(sys.exc_info()[0]), flush=True)
+
+
+        return render_template('animal_vaccine.html', animalTag=tag)
+
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/Admin/Animals/Slaughter/<tag>', methods=['POST', 'GET'])
+def animal_slaughter(tag):
+    if session.get('UserID') is not None and session.get('Type') == 'ADMIN':
+        if request.method == 'POST':
+            try:
+                SlaughterDate = request.form['SlaughterDate']
+                SlaughterDate = SlaughterDate[8:10] + '-' + SlaughterDate[5:7] + '-' + SlaughterDate[0:4]  # 0123 4 56 7 89
+
+                db = DatabaseByPyMySQL()
+                sts = db.addSlaughterAnimal(tag, SlaughterDate)
+
+                return redirect(url_for('AnimalsDetails', tag=tag))
+
+            except:
+                return redirect(url_for('AnimalsDetails', tag=tag))
+                print('Error on animal_slaughter = ', str(sys.exc_info()[0]), flush=True)
+
+
+        return render_template('animal_slaughter.html', animalTag=tag)
+
+    else:
+        return redirect(url_for('login'))
+
+
+
+
+
 @app.route('/Login')
 def login():
 

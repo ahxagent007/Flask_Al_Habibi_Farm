@@ -1,0 +1,58 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}
+    <title>Al Habibi Farm</title>
+{% endblock %}
+
+{% block page_header %}
+
+    <h2 class="pageheader-title">Admin</h2>
+
+    <div class="page-breadcrumb">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page"><a href="{{ url_for('admin_add_owner')}}" class="breadcrumb-link">Animal / Vaccine</a></li>
+            </ol>
+        </nav>
+    </div>
+
+{% endblock %}
+
+{% block content %}
+
+
+    <row>
+        <div class="col-xl-12 col-lg-6 col-md-12 col-sm-12 col-12">
+            <div class="card">
+                <h5 class="card-header">Vaccine for {{animalTag}}</h5>
+                <div class="card-body">
+                    <form action="{{url_for('animal_vaccine',tag=animalTag)}}" id="AddEmployeeForm" data-parsley-validate="" method="post">
+
+                        <div class="form-group">
+                            <label for="VaccineDetails">Vacine Details:</label>
+                            <input id="VaccineDetails" type="text" name="VaccineDetails" data-parsley-trigger="change" required="" placeholder="Enter vaccine Details" autocomplete="off" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="VaccineDate">Vaccine Date:</label><br>
+                            <input type="date" id="VaccineDate" name="VaccineDate">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-6 pb-2 pb-sm-4 pb-lg-0 pr-0">
+
+                            </div>
+                            <div class="col-sm-6 pl-0">
+                                <p class="text-right">
+                                    <button type="submit" class="btn btn-space btn-primary">Submit</button>
+                                    <button class="btn btn-space btn-secondary">Cancel</button>
+                                </p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </row>
+
+{% endblock %}

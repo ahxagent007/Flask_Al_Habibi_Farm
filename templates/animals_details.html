@@ -42,7 +42,27 @@
                 {% endfor %}
 
             </div>
+            <br>
 
+            <div class="row text-center">
+                <div class="col-3">
+                    <a href="/Admin/Animals/Vaccine/{{animal['AnimalTag']}}" class="btn btn-success">Vaccine</a>
+                </div>
+
+                <div class="col-3">
+                    <a href="/Admin/Animals/Slaughter/{{animal['AnimalTag']}}" class="btn btn-warning">Slaughter</a>
+                </div>
+
+                <div class="col-3">
+                    <a href="/Admin/Animals/Missing/{{animal['AnimalID']}}" class="btn btn-danger">Missing</a>
+                </div>
+
+                <div class="col-3">
+                    <a href="/Admin/Animals/Died/{{animal['AnimalID']}}" class="btn btn-danger">Died</a>
+                </div>
+
+            </div>
+            <br>
 
             <img class="img-fluid" src="/static/UPLOADS/{{animal['AnimalPictureName']}}" alt="{{animal['AnimalTag']}}p">
 
