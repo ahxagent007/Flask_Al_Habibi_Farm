@@ -30,7 +30,7 @@
                 <p class="card-text">Owner: {{animal['AnimalOwner']}}</p>
                 <p class="card-text">Date of Birth: {{animal['AnimalDOB']}} Age: {{age['years']}} years ({{age['days']}} days)</p>
                 <p class="card-text">Father: <a href="{{animal['AnimalFather']}}">{{animal['AnimalFather']}}</a> Mother: <a href="{{animal['AnimalMother']}}">{{animal['AnimalMother']}}</a></p>
-                <p class="card-text">Weight: {{animal['AnimalWeight']}}</p>
+                <!--<p class="card-text">Weight: {{animal['AnimalWeight']}}</p>-->
                 <p class="card-text">Status: {{animal['AnimalStatus']}} ({{animal['AnimalStatusDate']}} - {{animal['AnimalStatusCause']}})</p>
                 <p class="text-muted">Last Update: {{animal['UpdatedDate']}}</p>
             </div>
@@ -62,7 +62,7 @@
                 </div>
                 {% endif %}
 
-                {% if animal['AnimalStatus'] == 'ALIVE'  or animal['AnimalStatus'] == 'MISSING' %}
+                {% if animal['AnimalStatus'] == 'ALIVE' %}
                 <div class="col-3">
                     <a href="/Admin/Animals/Died/{{animal['AnimalTag']}}" class="btn btn-danger">Died</a>
                 </div>

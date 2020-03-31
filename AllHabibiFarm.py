@@ -21,6 +21,7 @@ current_milli_time = lambda: int(round(time.time() * 1000))
 
 #################### DATABASE ####################################
 
+
 class DatabaseByPyMySQL:
     def __init__(self):
         host = "localhost"
@@ -108,7 +109,7 @@ class DatabaseByPyMySQL:
                         sql = 'UPDATE commondata SET TotalGoat = {0}, MissingGoat = {1} WHERE CdID = {2};'.format(
                             data[0]['TotalGoat'] - 1, data[0]['MissingGoat'] + 1, data[0]['CdID'])
                     elif TYPE == 'DIED':
-                        sql = 'UPDATE commondata SET SET TotalGoat = {0}, DiedGoat = {1} WHERE CdID = {2};'.format(
+                        sql = 'UPDATE commondata SET TotalGoat = {0}, DiedGoat = {1} WHERE CdID = {2};'.format(
                             data[0]['TotalGoat'] - 1, data[0]['DiedGoat'] + 1, data[0]['CdID'])
                     elif TYPE == 'SLAUGHTER':
                         sql = 'UPDATE commondata SET TotalGoat = {0}, SlaughterGoat = {1} WHERE CdID = {2};'.format(
@@ -146,6 +147,7 @@ class DatabaseByPyMySQL:
                             sql = 'UPDATE commondata SET MissingSheep = {0} WHERE CdID = {1};'.format(data[0]['MissingSheep'] - 1, data[0]['CdID'])
                         elif STATUS == 'DIED':
                             sql = 'UPDATE commondata SET DiedSheep = {0} WHERE CdID = {1};'.format(data[0]['DiedSheep'] - 1, data[0]['CdID'])
+
                 elif CAT == 'CAMEL':
                     if TYPE == 'ADD':
                         sql = 'UPDATE commondata SET TotalCamel = {0} WHERE CdID = {1};'.format(data[0]['TotalCamel'] + 1,
@@ -213,11 +215,11 @@ class DatabaseByPyMySQL:
         if self.isEmailExist(Email):
             user, sts = self.getUserByEmail(Email)
             if user['UserPass'] == Pass:
-                return user['Type'], True
+                return user['Type'], user['UserName'], True
             else:
-                return 'NULL', False
+                return 'NULL','NULL', False
         else:
-            return 'NULL', False
+            return 'NULL','NULL', False
 
     #2
     def getCommonData(self):
@@ -367,7 +369,7 @@ class DatabaseByPyMySQL:
             return data, False
 
     # 13
-    def addAnimal(self, AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalPictureName):
+    def addAnimal(self, AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalPictureName):
 
         try:
             last_id, sts = self.getAnimalLastID()
@@ -382,9 +384,9 @@ class DatabaseByPyMySQL:
             addedDate = str(now.strftime("%d-%m-%Y"))
 
             # Adding
-            sql1 = 'INSERT INTO animal(AnimalID, AnimalTag, AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalStatus, AddedDate, UpdatedDate, AnimalPictureName)' \
-                   ' VALUES({0},"{1}","{2}","{3}","{4}","{5}","{6}","{7}","{8}",{9},"ALIVE","{10}","{10}","{11}");'.format(animal_id, animal_tag, AnimalCategory, AnimalBreed, AnimalSex,
-                                                                                                                    AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, addedDate, AnimalPictureName)
+            sql1 = 'INSERT INTO animal(AnimalID, AnimalTag, AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalStatus, AddedDate, UpdatedDate, AnimalPictureName)' \
+                   ' VALUES({0},"{1}","{2}","{3}","{4}","{5}","{6}","{7}","{8}","ALIVE","{9}","{9}","{10}");'.format(animal_id, animal_tag, AnimalCategory, AnimalBreed, AnimalSex,
+                                                                                                                    AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, addedDate, AnimalPictureName)
             print(sql1, flush=True)
             self.cursor.execute(sql1)
             self.conection.commit()
@@ -406,20 +408,23 @@ class DatabaseByPyMySQL:
             animal, stsb  = self.getAnimalByTag(AnimalTag)
             print('AnimalCategory '+animal['AnimalCategory']+ ' status : '+animal['AnimalStatus'], flush=True)
             if animal['AnimalStatus'] != 'DIED':
-                self.updateCommonData(animal['AnimalCategory'], 'DIED')
+                status = self.updateCommonData(animal['AnimalCategory'], 'DIED')
 
-            # current date and time
-            now = datetime.now()
-            dateNow = now.strftime("%d-%m-%Y")
-            sts = 'DIED'
-            # Adding Dish
-            sql1 = 'UPDATE Animal SET AnimalStatus = "{0}",  AnimalStatusDate = "{1}", AnimalStatusCause = "{2}", UpdatedDate = "{3}" WHERE AnimalTag = "{4}";'.format(sts, Date, Cause, dateNow, AnimalTag)
-            self.cursor.execute(sql1)
-            self.conection.commit()
+            if status:
+                # current date and time
+                now = datetime.now()
+                dateNow = now.strftime("%d-%m-%Y")
+                sts = 'DIED'
+                # Adding Dish
+                sql1 = 'UPDATE Animal SET AnimalStatus = "{0}",  AnimalStatusDate = "{1}", AnimalStatusCause = "{2}", UpdatedDate = "{3}" WHERE AnimalTag = "{4}";'.format(sts, Date, Cause, dateNow, AnimalTag)
+                self.cursor.execute(sql1)
+                self.conection.commit()
 
-            print(sql1, flush=True)
+                print(sql1, flush=True)
 
-            return True
+                return True
+            else:
+                return False
 
         except:
             print('Error on addDiedAnimal()', flush=True)
@@ -433,23 +438,24 @@ class DatabaseByPyMySQL:
             animal, stsb = self.getAnimalByTag(AnimalTag)
             print('AnimalCategory ' + animal['AnimalCategory'] + ' status : ' + animal['AnimalStatus'], flush=True)
             if animal['AnimalStatus'] != 'MISSING':
-                self.updateCommonData(animal['AnimalCategory'], 'MISS')
+                status = self.updateCommonData(animal['AnimalCategory'], 'MISS')
 
-            # current date and time
-            now = datetime.now()
-            dateNow = now.strftime("%d-%m-%Y")
-            sts = 'MISSING'
-            cause = 'NULL'
-            # Adding Dish
-            sql1 = 'UPDATE Animal SET AnimalStatus = "{0}",  AnimalStatusDate = "{1}", AnimalStatusCause = "{2}", UpdatedDate = "{3}" WHERE AnimalTag = "{4}";'.format(
-                sts, Date, cause, dateNow, AnimalTag)
-            self.cursor.execute(sql1)
-            self.conection.commit()
+            if status:
+                # current date and time
+                now = datetime.now()
+                dateNow = now.strftime("%d-%m-%Y")
+                sts = 'MISSING'
+                cause = 'NULL'
+                # Adding Dish
+                sql1 = 'UPDATE Animal SET AnimalStatus = "{0}",  AnimalStatusDate = "{1}", AnimalStatusCause = "{2}", UpdatedDate = "{3}" WHERE AnimalTag = "{4}";'.format(
+                    sts, Date, cause, dateNow, AnimalTag)
+                self.cursor.execute(sql1)
+                self.conection.commit()
 
-            print(sql1, flush=True)
-
-
-            return True
+                print(sql1, flush=True)
+                return True
+            else:
+                return False
 
         except:
             print('Error on addMissinAnimal()', flush=True)
@@ -463,23 +469,25 @@ class DatabaseByPyMySQL:
             animal, stsb = self.getAnimalByTag(AnimalTag)
             print('AnimalCategory '+animal['AnimalCategory']+ ' status : '+animal['AnimalStatus'], flush=True)
             if animal['AnimalStatus'] != 'SLAUGHTER':
-                self.updateCommonData(animal['AnimalCategory'], 'SLAUGHTER')
+                status = self.updateCommonData(animal['AnimalCategory'], 'SLAUGHTER')
 
-            # current date and time
-            now = datetime.now()
-            dateNow = now.strftime("%d-%m-%Y")
-            sts = 'SLAUGHTER'
-            cause = 'NULL'
-            # Adding Dish
-            sql1 = 'UPDATE Animal SET AnimalStatus = "{0}",  AnimalStatusDate = "{1}", AnimalStatusCause = "{2}", UpdatedDate = "{3}" WHERE AnimalTag = "{4}";'.format(
-                sts, Date, cause, dateNow, AnimalTag)
-            self.cursor.execute(sql1)
-            self.conection.commit()
+            if status:
 
-            print(sql1, flush=True)
+                # current date and time
+                now = datetime.now()
+                dateNow = now.strftime("%d-%m-%Y")
+                sts = 'SLAUGHTER'
+                cause = 'NULL'
+                # Adding Dish
+                sql1 = 'UPDATE Animal SET AnimalStatus = "{0}",  AnimalStatusDate = "{1}", AnimalStatusCause = "{2}", UpdatedDate = "{3}" WHERE AnimalTag = "{4}";'.format(
+                    sts, Date, cause, dateNow, AnimalTag)
+                self.cursor.execute(sql1)
+                self.conection.commit()
 
-
-            return True
+                print(sql1, flush=True)
+                return True
+            else:
+                return False
 
         except:
             print('Error on addSlaughterAnimal()', flush=True)
@@ -548,7 +556,7 @@ class DatabaseByPyMySQL:
             return False
 
     # #20
-    def updateAnimal(self, AnimalID, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalPictureBlob):
+    def updateAnimal(self, AnimalID, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalPictureBlob):
 
         try:
             # current date and time
@@ -557,8 +565,8 @@ class DatabaseByPyMySQL:
 
             # Update
             sql1 = 'UPDATE Animal SET AnimalSex = "{0}",  AnimalOwner = "{1}", AnimalDOB = "{2}", AnimalFather = "{3}", AnimalMother = "{4}", ' \
-                   'AnimalWeight = {5}, UpdatedDate = "{6}" WHERE AnimalID = {7};'.format(
-                                                                        AnimalSex, AnimalOwner, AnimalDOB, AnimalFather,AnimalMother, AnimalWeight, dateNow, AnimalID)
+                   ' UpdatedDate = "{5}" WHERE AnimalID = {6};'.format(
+                                                                        AnimalSex, AnimalOwner, AnimalDOB, AnimalFather,AnimalMother, dateNow, AnimalID)
             self.cursor.execute(sql1)
             self.conection.commit()
 
@@ -695,12 +703,12 @@ def Login():
         return jsonify({"status": 0, "type": "NULL"}), 400
 
     DB = DatabaseByPyMySQL()
-    type, status = DB.Login(email, passs)
+    type, name, status = DB.Login(email, passs)
 
     if status:
-        return jsonify({"status": 1, "type": type}), 200
+        return jsonify({"status": 1, "type": type, 'name': name}), 200
     else:
-        return jsonify({"status": 0, "type": type}), 200
+        return jsonify({"status": 0, "type": type, 'name': name}), 200
 
 # 2
 @app.route('/API/CommonData', methods=['POST'])
@@ -885,7 +893,6 @@ def AddAnimal():
         AnimalDOB = contentJSON["AnimalDOB"]
         AnimalFather = contentJSON["AnimalFather"]
         AnimalMother = contentJSON["AnimalMother"]
-        AnimalWeight = contentJSON["AnimalWeight"]
         AnimalPictureName = contentJSON["AnimalPictureName"]
 
     except:
@@ -893,7 +900,7 @@ def AddAnimal():
         return jsonify({"status": 0}), 400
 
     DB = DatabaseByPyMySQL()
-    status = DB.addAnimal(AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalPictureName)
+    status = DB.addAnimal(AnimalCategory, AnimalBreed, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalPictureName)
 
     if status:
         return jsonify({"status": 1}), 200
@@ -1030,7 +1037,6 @@ def UpdateAnimal():
         AnimalDOB = contentJSON["AnimalDOB"]
         AnimalFather = contentJSON["AnimalFather"]
         AnimalMother = contentJSON["AnimalMother"]
-        AnimalWeight = contentJSON["AnimalWeight"]
         AnimalPictureBlob = contentJSON["AnimalPictureBlob"]
 
     except:
@@ -1038,7 +1044,7 @@ def UpdateAnimal():
         return jsonify({"status": 0, "data": "NULL"}), 400
 
     DB = DatabaseByPyMySQL()
-    status = DB.updateAnimal(AnimalID, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalWeight, AnimalPictureBlob)
+    status = DB.updateAnimal(AnimalID, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalPictureBlob)
 
     if status:
         return jsonify({"status": 1}), 200
@@ -1222,7 +1228,6 @@ def admin_add_animal():
                     owner = request.form['AnimalOwner']
                     dob = request.form['AnimalDOB']
                     dob = dob[8:10] + '-' + dob[5:7] + '-' + dob[0:4]  # 0123 4 56 7 89
-                    weight = request.form['AnimalWeight']
                 except:
                     return render_template('admin_add_animal.html', msg='False', data=data)
                     print('Error = ', str(sys.exc_info()[0]), flush=True)
@@ -1230,7 +1235,7 @@ def admin_add_animal():
                 print('DOB : ' + str(dob), flush=True)
 
                 db = DatabaseByPyMySQL()
-                status = db.addAnimal(category, breed, sex, owner, dob, father, mother, weight, filename)
+                status = db.addAnimal(category, breed, sex, owner, dob, father, mother, filename)
 
                 print(str(status), flush=True)
                 return render_template('admin_add_animal.html', msg=str(status), data=data)
@@ -1612,7 +1617,7 @@ def login_request():
 
         db = DatabaseByPyMySQL()
 
-        user_type, status = db.Login(Email, Password)
+        user_type, user_name, status = db.Login(Email, Password)
 
         if status and user_type == 'ADMIN':
             user, sts = db.getUserByEmail(Email)
