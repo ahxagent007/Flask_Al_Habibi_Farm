@@ -556,7 +556,7 @@ class DatabaseByPyMySQL:
             return False
 
     # #20
-    def updateAnimal(self, AnimalID, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalPictureBlob):
+    def updateAnimal(self, AnimalTag, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalPictureBlob):
 
         try:
             # current date and time
@@ -564,15 +564,15 @@ class DatabaseByPyMySQL:
             dateNow = now.strftime("%d-%m-%Y")
 
             # Update
-            sql1 = 'UPDATE Animal SET AnimalSex = "{0}",  AnimalOwner = "{1}", AnimalDOB = "{2}", AnimalFather = "{3}", AnimalMother = "{4}", ' \
-                   ' UpdatedDate = "{5}" WHERE AnimalID = {6};'.format(
-                                                                        AnimalSex, AnimalOwner, AnimalDOB, AnimalFather,AnimalMother, dateNow, AnimalID)
+            sql1 = 'UPDATE animal SET AnimalSex = "{0}",  AnimalOwner = "{1}", AnimalDOB = "{2}", AnimalFather = "{3}", AnimalMother = "{4}", ' \
+                   ' UpdatedDate = "{5}" WHERE AnimalTag = "{6}";'.format(
+                                                                        AnimalSex, AnimalOwner, AnimalDOB, AnimalFather,AnimalMother, dateNow, AnimalTag)
             self.cursor.execute(sql1)
             self.conection.commit()
 
             print(sql1, flush=True)
 
-            sql2 = 'UPDATE AnimalPicture SET AnimalPictureBlob = "{0}" WHERE AnimalID = {1};'.format(AnimalPictureBlob, AnimalID)
+            sql2 = 'UPDATE AnimalPicture SET AnimalPictureBlob = "{0}" WHERE AnimalID = {1};'.format(AnimalPictureBlob, AnimalTag)
             self.cursor.execute(sql2)
             self.conection.commit()
 
@@ -669,6 +669,17 @@ class DatabaseByPyMySQL:
         else:
             return data, False
 
+    def getAllVaccineHistory(self,):
+        sql_qry = 'SELECT * FROM vaccinedetails;'
+        self.cursor.execute(sql_qry)
+        data = self.cursor.fetchall()
+
+        print('getAllVaccineHistory : ', str(data), flush=True)
+
+        if len(data) > 0:
+            return data, True
+        else:
+            return data, False
 
 #################### DATABASE END ####################################
 
@@ -1031,7 +1042,7 @@ def AddOwner():
 def UpdateAnimal():
     contentJSON = request.json
     try:
-        AnimalID = contentJSON["AnimalID"]
+        AnimalTag = contentJSON["AnimalTag"]
         AnimalSex = contentJSON["AnimalSex"]
         AnimalOwner = contentJSON["AnimalOwner"]
         AnimalDOB = contentJSON["AnimalDOB"]
@@ -1044,7 +1055,7 @@ def UpdateAnimal():
         return jsonify({"status": 0, "data": "NULL"}), 400
 
     DB = DatabaseByPyMySQL()
-    status = DB.updateAnimal(AnimalID, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalPictureBlob)
+    status = DB.updateAnimal(AnimalTag, AnimalSex, AnimalOwner, AnimalDOB, AnimalFather, AnimalMother, AnimalPictureBlob)
 
     if status:
         return jsonify({"status": 1}), 200
@@ -1158,7 +1169,51 @@ def uploadFileAnimalPicture():
         resp.status_code = 400
         return resp
 
+#25
+@app.route('/API/AddMultipleAnimal', methods=['POST'])
+def AddMultipleAnimal():
+    contentJSON = request.json
+    try:
+        male = contentJSON["male"]
+        female = contentJSON["female"]
+        baby = contentJSON["baby"]
+        cat = contentJSON["cat"]
+        sub_cat = contentJSON["sub_cat"]
+        owner = contentJSON["owner"]
 
+    except:
+        print('Error = ', str(sys.exc_info()[0]), flush=True)
+        return jsonify({"status": 0}), 400
+
+    total = int(male) + int(female) + int(baby)
+
+    DB = DatabaseByPyMySQL()
+
+    for i in range(0, int(male)):
+        status = DB.addAnimal(cat, sub_cat, 'Male', owner, '00-00-0000', 'Null', 'Null', 'null.jpg')
+
+    for i in range(0,int(female)):
+        status = DB.addAnimal(cat, sub_cat, 'Female', owner, '00-00-0000', 'Null', 'Null', 'null.jpg')
+
+    for i in range(0,int(baby)):
+        status = DB.addAnimal(cat, sub_cat, 'Baby', owner, '00-00-0000', 'Null', 'Null', 'null.jpg')
+
+    if status:
+        return jsonify({"status": total}), 200
+    else:
+        return jsonify({"status": 0}), 200
+
+# 10
+@app.route('/API/AllVaccineHistory', methods=['POST'])
+def AllVaccineHistory():
+
+    DB = DatabaseByPyMySQL()
+    data, status = DB.getAllVaccineHistory()
+
+    if status:
+        return jsonify({"status": 1, "data": data}), 200
+    else:
+        return jsonify({"status": 0, "data": data}), 200
 
 #################### API END ####################################
 
